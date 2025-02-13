@@ -7,51 +7,49 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/younesbeheshti/chatapp-backend/models"
+	"github.com/younesbeheshti/chatapp-backend/services"
 )
 
 
-var users []models.User
+var res models.Respnse
 
-func Init()  {
-	users = append(users, models.User{
-		ID: 1,
-		Name: "yones",
-		Password: "1234",
-	})
+func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 
-	users = append(users, models.User{
-		ID: 2,
-		Name: "yalda",
-		Password: "1234",
-	})
-}
-
-func GetUsers() []models.User {
-	return users
-}
-
-
-func HandlerLogin(w http.ResponseWriter, r *http.Request) {
-
-	user := mux.Vars(r)
-
-	for _, u := range users {
-		if u.Name == user["name"] {
-			if u.Password == user["password"] {
-				res := models.Respnse{
-					Message: fmt.Sprintf("user with id: %v successfuly loged in", u.ID),
-				}
-				w.WriteHeader(http.StatusOK)
-				json.NewEncoder(w).Encode(res)
-				return
-			}
-		}
+	params := mux.Vars(r)
+	email := params["email"]
+	password := params["password"]
+	err := services.LoginUser(email, password)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		res.Message = "user not found"
+		json.NewEncoder(w).Encode(res)
+		return
 	}
 
-	res := models.Respnse{
-		Message: "user not found!",
-	}
-	w.WriteHeader(http.StatusNotFound)
+	w.WriteHeader(http.StatusOK)
+	res.Message = "user found!"
 	json.NewEncoder(w).Encode(res)
-
 }
+
+
+func RegisterUserHandler(w http.ResponseWriter, r *http.Request)  {
+	params := mux.Vars(r)
+	username := params["username"]
+	email := params["email"]
+	password := params["password"]
+	err := services.RegisterUser(username, email, password)
+	if err != nil {
+		res.Message = err.Error()
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	res.Message = "user successfully registered!"
+	w.WriteHeader(http.StatusOK)	
+	json.NewEncoder(w).Encode(res)
+}
+
+
+func GetChatHandler(w http.ResponseWriter, r *http.Request) {}
+func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {}
+func MarkMessagesReadHandler(w http.ResponseWriter, r *http.Request) {}

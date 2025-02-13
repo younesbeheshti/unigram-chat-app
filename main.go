@@ -1,9 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 
-	"github.com/younesbeheshti/chatapp-backend/handlers"
 	"github.com/younesbeheshti/chatapp-backend/routes"
 )
 
@@ -11,11 +12,11 @@ import (
 
 func main() {
 
-	handlers.Init()
 
+	router := routes.SetupRoutes()
 
-	router := routes.NewRouter()
+	fmt.Println("server is up on port: 8080")
 
-	http.ListenAndServe(":8080", router)
+	log.Fatal(http.ListenAndServe(":8080", router))
 
 }
