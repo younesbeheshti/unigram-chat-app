@@ -2,8 +2,27 @@ package models
 
 import (
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
+type LoginRequst struct {
+	Email string `json:"email"`
+	Password string `json:"password"`
+}
+
+type RegisterRequest struct {
+	Username string `json:"username"`
+	Email string `json:"email"`
+	Password string `json:"password"`
+}
+
+type MessageRequest struct {
+	ChatID     uint   `json:"chatid"`
+	SenderID   uint   `json:"senderid"`
+	ReceiverID uint   `json:"receiverid"`
+	Content    string `json:"content"`
+}
 type User struct {
 	ID           uint   `gorm:"primarykey;autoIncreament"`
 	Username     string `gorm:"unique;not null"`
@@ -33,4 +52,9 @@ type Message struct {
 type Respnse struct {
 	UserID  int64  `json:"userid,omitempty"`
 	Message string `json:"message,omitempty"`
+}
+
+
+func (u *User) ValidatePassword(pw string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(pw)) == nil
 }

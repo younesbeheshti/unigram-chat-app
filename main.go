@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/younesbeheshti/chatapp-backend/config"
 	"github.com/younesbeheshti/chatapp-backend/routes"
 )
 
@@ -14,6 +15,7 @@ func main() {
 
 
 	router := routes.SetupRoutes()
+	config.Init()
 
 	fmt.Println("server is up on port: 8080")
 

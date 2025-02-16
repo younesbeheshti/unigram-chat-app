@@ -1,9 +1,11 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/younesbeheshti/chatapp-backend/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -13,8 +15,15 @@ import (
 var db *gorm.DB
 
 func ConnectDB() *gorm.DB {
+	
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal(err)
+	}
+	
 	dsn := os.Getenv("POSTGRES_URL")
 
+	fmt.Println(dsn)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)

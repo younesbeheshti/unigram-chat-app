@@ -7,7 +7,7 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/models"
 )
 
-func SaveMessage(chatID uint, senderID uint, receiverID uint, content string) {
+func SaveMessage(chatID uint, senderID uint, receiverID uint, content string) error{
 	db := config.GetDB()
 
 	message := models.Message{
@@ -18,14 +18,19 @@ func SaveMessage(chatID uint, senderID uint, receiverID uint, content string) {
 		CreatedAt:  time.Now(),
 	}
 
-	db.Create(&message)
+	result := db.Create(&message)
+	if err := result.Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 func GetChatHistory(chatID uint) (*[]models.Message, error) {
 	db := config.GetDB()
 
 	messages := new([]models.Message)
 
-	result := db.Table("messages").Where("chat_id = ?", chatID).Find(&messages)
+	result := db.Table("messages").Where("chat_id = ?", chatID).Order("created_at desc").Find(&messages)
 
 	if err := result.Error; err != nil {
 		return nil, err

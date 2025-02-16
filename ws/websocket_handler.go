@@ -8,8 +8,8 @@ import (
 )
 
 func HandleWebsocketConnection(w http.ResponseWriter, r *http.Request) {}
-func ReadMessages(conn *websocket.Conn, userID uint)  {
-	
+func ReadMessages(conn *websocket.Conn, userID uint) {
+
 }
 func BroadcastMessage(message *models.Message) {}
-func DisconnectUser(userID uint) {}
+func DisconnectUser(userID uint)               {}
