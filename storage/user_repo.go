@@ -27,7 +27,14 @@ func CreatUser(user *models.User) error{
 
 	return nil
 }
-func GetUserByID(userID uint) {}
+func GetUserByID(userID uint) *models.User {
+	db := config.GetDB()
+
+	user := new(models.User)
+	db.Table("users").Find(&user)
+	return user
+	
+}
 
 func GetUsers() (*[]models.User, error) {
 	db := config.GetDB()

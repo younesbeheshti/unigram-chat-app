@@ -7,13 +7,13 @@ import (
 )
 
 type LoginRequst struct {
-	Email string `json:"email"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 type RegisterRequest struct {
 	Username string `json:"username"`
-	Email string `json:"email"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -52,8 +52,8 @@ type Message struct {
 type Respnse struct {
 	UserID  int64  `json:"userid,omitempty"`
 	Message string `json:"message,omitempty"`
+	Token   string `json:"token"`
 }
-
 
 func (u *User) ValidatePassword(pw string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(pw)) == nil

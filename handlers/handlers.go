@@ -9,6 +9,7 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/models"
 	"github.com/younesbeheshti/chatapp-backend/services"
 	"github.com/younesbeheshti/chatapp-backend/storage"
+	"github.com/younesbeheshti/chatapp-backend/utils"
 )
 
 var res models.Respnse
@@ -21,7 +22,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err := services.LoginUser(req.Email, req.Password)
+	userid, err := services.LoginUser(req.Email, req.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		res.Message = "user not found"
@@ -29,8 +30,16 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	
+
+	res.Token, err = utils.GenerateJWT(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		res.Message = "login again"
+		json.NewEncoder(w).Encode(res)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
-	res.Message = "user found!"
 	json.NewEncoder(w).Encode(res)
 }
 
@@ -50,6 +59,7 @@ func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.Message = "user successfully registered!"
+	res.Token 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
 }

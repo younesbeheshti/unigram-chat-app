@@ -30,18 +30,18 @@ func RegisterUser(username string, email string, password string) error {
 	return nil
 }
 
-func LoginUser(email string, password string) error {
+func LoginUser(email string, password string) (uint, error) {
 
 	user, err := storage.GetUserByEmail(email)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if !user.ValidatePassword(password) {
-		return fmt.Errorf("not registered")
+		return 0, fmt.Errorf("not registered")
 	}
 
 	// handle JWT token latter
 
-	return nil
+	return user.ID, nil
 }

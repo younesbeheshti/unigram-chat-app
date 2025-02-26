@@ -7,18 +7,18 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/models"
 )
 
-func SaveMessage(chatID uint, senderID uint, receiverID uint, content string) error{
+func SaveMessage(message *models.MessageRequest) error{
 	db := config.GetDB()
 
-	message := models.Message{
-		ChatID:     chatID,
-		SenderID:   senderID,
-		ReceiverID: receiverID,
-		Content:    content,
-		CreatedAt:  time.Now(),
+	msg := models.Message{
+		ChatID: message.ChatID,
+		SenderID: message.SenderID,
+		ReceiverID: message.ReceiverID,
+		Content: message.Content,
+		CreatedAt: time.Now(),
 	}
 
-	result := db.Create(&message)
+	result := db.Create(&msg)
 	if err := result.Error; err != nil {
 		return err
 	}
