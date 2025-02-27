@@ -17,15 +17,18 @@ func GetUserByEmail(email string) (*models.User, error) {
 
 	return user, nil
 }
-func CreatUser(user *models.User) error{
+func CreatUser(user *models.User) (uint, error) {
 	db := config.GetDB()
+
+
+	// TODO : returting the user id to 
 
 	result := db.Create(&user)
 	if err := result.Error; err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return user.ID, nil
 }
 func GetUserByID(userID uint) *models.User {
 	db := config.GetDB()
@@ -33,7 +36,7 @@ func GetUserByID(userID uint) *models.User {
 	user := new(models.User)
 	db.Table("users").Find(&user)
 	return user
-	
+
 }
 
 func GetUsers() (*[]models.User, error) {
@@ -42,8 +45,8 @@ func GetUsers() (*[]models.User, error) {
 	users := new([]models.User)
 	result := db.Table("users").Find(&users)
 	if err := result.Error; err != nil {
-		return nil,err
+		return nil, err
 	}
 
-	return users, nil 
+	return users, nil
 }

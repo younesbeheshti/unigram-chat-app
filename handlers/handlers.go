@@ -30,8 +30,6 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
-
 	res.Token, err = utils.GenerateJWT(userid)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -51,15 +49,21 @@ func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := services.RegisterUser(req.Username, req.Email, req.Password)
+	userid, err := services.RegisterUser(req.Username, req.Email, req.Password)
 	if err != nil {
 		res.Message = err.Error()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
+	// res.Token
+	res.Token, err = utils.GenerateJWT(userid)
+	if err != nil {
+		res.Message = err.Error()
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	res.Message = "user successfully registered!"
-	res.Token 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
 }
@@ -76,15 +80,15 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(users)
 }
-func GetChatHandler(w http.ResponseWriter, r *http.Request) {	
+func GetChatHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	userID,err := strconv.Atoi((mux.Vars(r)["chatid"]))
+	userID, err := strconv.Atoi((mux.Vars(r)["chatid"]))
 	if err != nil {
 		res.Message = err.Error()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	chats, err := storage.GetChatsByUserID(uint(userID))
 	if err != nil {
 		res.Message = err.Error()
@@ -96,7 +100,7 @@ func GetChatHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(chats)
 
 }
-func GetMessagesHandler(w http.ResponseWriter, r *http.Request)      {
+func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	chatid, err := strconv.Atoi(mux.Vars(r)["chatid"])
 	if err != nil {
@@ -137,5 +141,3 @@ func SendMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 func MarkMessagesReadHandler(w http.ResponseWriter, r *http.Request) {
 }
-
-

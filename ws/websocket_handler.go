@@ -33,7 +33,7 @@ func NewManager() *Manager {
 		broadcast: make(chan Event),
 	}
 
-	m.start()
+	go m.start()
 	return &m
 }
 

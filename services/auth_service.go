@@ -8,12 +8,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func RegisterUser(username string, email string, password string) error {
+func RegisterUser(username string, email string, password string) (uint,error) {
 
 	encpw, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	fmt.Println(username, email, password)
@@ -23,11 +23,15 @@ func RegisterUser(username string, email string, password string) error {
 	user.Email = email
 	user.PasswordHash = string(encpw)
 
-	if err := storage.CreatUser(user); err != nil {
-		return err
-	}
 
-	return nil
+	// TODO : retrive the user id from db
+
+	userID, err := storage.CreatUser(user)
+	if err != nil {
+		return 0, err
+	}		
+
+	return userID, nil
 }
 
 func LoginUser(email string, password string) (uint, error) {
