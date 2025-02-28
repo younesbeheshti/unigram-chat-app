@@ -20,9 +20,6 @@ func GetUserByEmail(email string) (*models.User, error) {
 func CreatUser(user *models.User) (uint, error) {
 	db := config.GetDB()
 
-
-	// TODO : returting the user id to 
-
 	result := db.Create(&user)
 	if err := result.Error; err != nil {
 		return 0, err
@@ -49,4 +46,17 @@ func GetUsers() (*[]models.User, error) {
 	}
 
 	return users, nil
+}
+
+
+func GetContact(userID uint) (*[]models.User, error){
+	db := config.GetDB()
+
+	contacts := new([]models.User)
+	result := db.Table("users").Where("user_id != ?", userID).Find(&contacts)
+	if err := result.Error; err != nil {
+		return nil, err
+	}
+
+	return contacts, nil
 }

@@ -24,12 +24,12 @@ type MessageRequest struct {
 	Content    string `json:"content"`
 }
 type User struct {
-	ID           uint   `gorm:"primarykey;autoIncreament"`
-	Username     string `gorm:"unique;not null"`
-	Email        string `gorm:"unique;not null"`
-	PasswordHash string `gorm:"not null"`
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID           uint      `gorm:"primaryKey;autoIncrement" json:"id"`
+	Username     string    `gorm:"unique;not null" json:"username"`
+	Email        string    `gorm:"unique;not null" json:"email"`
+	PasswordHash string    `gorm:"not null" json:"-"`
+	CreatedAt    time.Time `json:"-"`
+	UpdatedAt    time.Time `json:"-"`
 }
 
 type Chat struct {
@@ -50,7 +50,7 @@ type Message struct {
 }
 
 type Respnse struct {
-	UserID  int64  `json:"userid,omitempty"`
+	UserID  uint  `json:"userid,omitempty"`
 	Message string `json:"message,omitempty"`
 	Token   string `json:"token"`
 }

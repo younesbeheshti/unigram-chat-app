@@ -77,7 +77,7 @@ func ServeWS(manager *Manager, w http.ResponseWriter, r *http.Request) {
 
 	client := NewClient(conn, manager, user)
 
-	m.register <- client
+	manager.register <- client
 
 	go client.readMessages()
 	go client.writeMessages()

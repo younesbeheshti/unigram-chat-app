@@ -15,9 +15,11 @@ func SetupRoutes() *mux.Router {
 
 	router.HandleFunc("/users", handlers.GetUsersHandler).Methods("GET")
 
-	router.HandleFunc("/register", handlers.RegisterUserHandler).Methods("POST")
-	router.HandleFunc("/login", handlers.LoginUserHandler).Methods("POST")
-	router.HandleFunc("/chats/{userid}", handlers.GetChatHandler).Methods("GET")
+	router.HandleFunc("/auth/register", handlers.RegisterUserHandler).Methods("POST")
+	router.HandleFunc("/auth/login", handlers.LoginUserHandler).Methods("POST")
+	router.HandleFunc("/user/chats/{userid}", handlers.GetChatHandler).Methods("GET")
+	router.HandleFunc("/user/contacts/{userid}", handlers.GetContactHandler).Methods("GET")
+	router.HandleFunc("/user/{userid}", handlers.GetUserHandler).Methods("GET")
 	router.HandleFunc("/messages/{chatid}", handlers.GetMessagesHandler).Methods("GET")
 	router.HandleFunc("/messages/read", handlers.MarkMessagesReadHandler).Methods("POST")
 	router.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {

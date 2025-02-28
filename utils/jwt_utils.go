@@ -18,7 +18,7 @@ func GenerateJWT(userID uint) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	
-	return token.SignedString(secretKey)
+	return token.SignedString([]byte(secretKey))
 }
 func ValidateToket(tokenString string) (*models.User, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {

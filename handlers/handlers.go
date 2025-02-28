@@ -15,17 +15,18 @@ import (
 var res models.Respnse
 
 func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "application/json")
 	var req models.LoginRequst
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		res.Message = err.Error()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
 	userid, err := services.LoginUser(req.Email, req.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		res.Message = "user not found"
+		res.Message = "Unauthorized"
 		json.NewEncoder(w).Encode(res)
 		return
 	}
@@ -33,15 +34,18 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	res.Token, err = utils.GenerateJWT(userid)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		res.Message = "login again"
+		res.Message = "Unauthorized"
 		json.NewEncoder(w).Encode(res)
 		return
 	}
+	res.UserID = userid
+	res.Message = "login successful"
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
 }
 
 func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "applcation/json")
 	var req models.RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		res.Message = err.Error()
@@ -56,13 +60,13 @@ func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// res.Token
 	res.Token, err = utils.GenerateJWT(userid)
 	if err != nil {
 		res.Message = err.Error()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	res.UserID = userid
 	res.Message = "user successfully registered!"
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
@@ -80,6 +84,43 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(users)
 }
+
+func GetUserHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	id, err := strconv.Atoi(mux.Vars(r)["userid"])
+	if err != nil {
+		res.Message = err.Error()
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	user := storage.GetUserByID(uint(id))
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(user)
+}
+
+func GetContactHandler(w http.ResponseWriter, r *http.Request)  {
+	w.Header().Set("Content-Type", "application/json")
+
+	id, err := strconv.Atoi(mux.Vars(r)["userid"])
+	if err != nil {
+		res.Message = err.Error()
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	contacts, err := storage.GetContact(uint(id))
+	if err != nil {
+		res.Message = err.Error()
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(contacts)
+
+}
+
 func GetChatHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	userID, err := strconv.Atoi((mux.Vars(r)["chatid"]))
@@ -129,12 +170,12 @@ func SendMessageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = storage.SaveMessage(req.ChatID, req.SenderID, req.ReceiverID, req.Content)
-	if err != nil {
-		res.Message = err.Error()
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	// err = storage.SaveMessage(req.ChatID, req.SenderID, req.ReceiverID, req.Content)
+	// if err != nil {
+	// 	res.Message = err.Error()
+	// 	w.WriteHeader(http.StatusBadRequest)
+	// 	return
+	// }
 
 	w.WriteHeader(http.StatusOK)
 }
