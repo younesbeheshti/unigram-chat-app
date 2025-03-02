@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/younesbeheshti/chatapp-backend/storage"
-	"github.com/younesbeheshti/chatapp-backend/utils"
 )
 
 type Manager struct {
@@ -57,17 +58,12 @@ func (m *Manager) start() {
 
 func ServeWS(manager *Manager, w http.ResponseWriter, r *http.Request) {
 
-	tokenString := r.URL.Query().Get("token")
-	if tokenString == "" {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+	id, err := strconv.Atoi(mux.Vars(r)["userid"])
+	if err != nil {
 		return
 	}
 
-	user, err := utils.ValidateToket(tokenString)
-	if err != nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
+	user := storage.GetUserByID(uint(id))
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {

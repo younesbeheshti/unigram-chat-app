@@ -13,7 +13,6 @@ import (
 )
 
 var res models.Respnse
-
 func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var req models.LoginRequst
@@ -23,7 +22,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userid, err := services.LoginUser(req.Email, req.Password)
+	userid, err := services.LoginUser(req.Username, req.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		res.Message = "Unauthorized"
@@ -109,7 +108,8 @@ func GetContactHandler(w http.ResponseWriter, r *http.Request)  {
 		return
 	}
 
-	contacts, err := storage.GetContact(uint(id))
+	var resp models.ContactsRespose
+	resp.Contacts, err = storage.GetContact(uint(id))
 	if err != nil {
 		res.Message = err.Error()
 		w.WriteHeader(http.StatusBadRequest)
@@ -117,11 +117,11 @@ func GetContactHandler(w http.ResponseWriter, r *http.Request)  {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(contacts)
+	json.NewEncoder(w).Encode(resp)
 
 }
 
-func GetChatHandler(w http.ResponseWriter, r *http.Request) {
+func GetChatsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	userID, err := strconv.Atoi((mux.Vars(r)["chatid"]))
 	if err != nil {
@@ -137,8 +137,11 @@ func GetChatHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var resp models.ChatResponse
+	resp.Chats = chats
+
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(chats)
+	json.NewEncoder(w).Encode(resp)
 
 }
 func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {

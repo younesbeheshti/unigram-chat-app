@@ -7,7 +7,7 @@ import (
 )
 
 type LoginRequst struct {
-	Email    string `json:"email"`
+	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
@@ -15,6 +15,14 @@ type RegisterRequest struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type ContactsRespose struct {
+	Contacts *[]User `json:"contacts"`
+}
+
+type ChatResponse struct {
+	Chats *[]Chat `json:"chat"`
 }
 
 type MessageRequest struct {
@@ -33,9 +41,10 @@ type User struct {
 }
 
 type Chat struct {
-	ID        uint `gorm:"primarykey;autoIncreament"`
-	User1ID   uint `gorm:"not null"`
-	User2ID   uint `gorm:"not null"`
+	ID        uint   `gorm:"primarykey" json:"id"`
+	ChatName  string `gorm:"not null" json:"chatname"`
+	User1ID   uint   `gorm:"not null" json:"user1id"`
+	User2ID   uint   `gorm:"not null" json:"user2id"`
 	CreatedAt time.Time
 }
 
@@ -50,7 +59,7 @@ type Message struct {
 }
 
 type Respnse struct {
-	UserID  uint  `json:"userid,omitempty"`
+	UserID  uint   `json:"userid,omitempty"`
 	Message string `json:"message,omitempty"`
 	Token   string `json:"token"`
 }

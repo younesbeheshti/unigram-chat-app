@@ -30,6 +30,8 @@ func GetChatsByUserID(userID uint) (*[]models.Chat, error){
 
 	chats := new([]models.Chat)
 
+	//TODO: if the user has any chat return the contact(*User model)
+
 	result := db.Table("chats").Where("user1_id = ? or user2_id = ?", userID, userID).Find(&chats)
 
 	if err := result.Error; err != nil {

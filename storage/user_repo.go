@@ -5,6 +5,18 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/models"
 )
 
+
+func GetUserByUserName(username string) (*models.User, error) {
+	db := config.GetDB()
+
+	user := new(models.User)
+	result := db.Table("users").Where("username = ?", username).Find(&user)
+	if err := result.Error; err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
 func GetUserByEmail(email string) (*models.User, error) {
 	db := config.GetDB()
 
@@ -48,12 +60,11 @@ func GetUsers() (*[]models.User, error) {
 	return users, nil
 }
 
-
-func GetContact(userID uint) (*[]models.User, error){
+func GetContact(userID uint) (*[]models.User, error) {
 	db := config.GetDB()
 
 	contacts := new([]models.User)
-	result := db.Table("users").Where("user_id != ?", userID).Find(&contacts)
+	result := db.Table("users").Where("id != ?", userID).Find(&contacts)
 	if err := result.Error; err != nil {
 		return nil, err
 	}

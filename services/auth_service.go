@@ -29,9 +29,9 @@ func RegisterUser(username string, email string, password string) (uint, error) 
 	return userID, nil
 }
 
-func LoginUser(email string, password string) (uint, error) {
+func LoginUser(username string, password string) (uint, error) {
 
-	user, err := storage.GetUserByEmail(email)
+	user, err := storage.GetUserByUserName(username)
 	if err != nil {
 		return 0, err
 	}
