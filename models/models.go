@@ -42,7 +42,6 @@ type User struct {
 
 type Chat struct {
 	ID        uint   `gorm:"primarykey" json:"id"`
-	ChatName  string `gorm:"not null" json:"chatname"`
 	User1ID   uint   `gorm:"not null" json:"user1id"`
 	User2ID   uint   `gorm:"not null" json:"user2id"`
 	CreatedAt time.Time

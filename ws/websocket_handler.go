@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/younesbeheshti/chatapp-backend/storage"
+	"gorm.io/gorm"
 )
 
 type Manager struct {
@@ -25,13 +27,12 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-
 func NewManager() *Manager {
 	m := Manager{
-		clients: make(ClientList),
-		register: make(chan *Client),
+		clients:    make(ClientList),
+		register:   make(chan *Client),
 		unregister: make(chan *Client),
-		broadcast: make(chan Event),
+		broadcast:  make(chan Event),
 	}
 
 	go m.start()
@@ -43,7 +44,7 @@ func (m *Manager) start() {
 		select {
 		case client := <-m.register:
 			m.mu.Lock()
-			m.clients[client.user.ID]= client
+			m.clients[client.user.ID] = client
 			m.mu.Unlock()
 
 		case client := <-m.unregister:
@@ -54,7 +55,6 @@ func (m *Manager) start() {
 		}
 	}
 }
-
 
 func ServeWS(manager *Manager, w http.ResponseWriter, r *http.Request) {
 
@@ -83,19 +83,46 @@ func (m *Manager) routeMessage(event Event, sender *Client) error {
 	if event.Message != nil {
 		return fmt.Errorf("msg is nil")
 	}
-	if err := storage.SaveMessage(event.Message); err != nil {
-		return err
-	}
+	
 	receiverID := event.Message.ReceiverID
 
 	m.mu.Lock()
 	receiver, ok := m.clients[receiverID]
 	m.mu.Unlock()
+	
+	_, err := storage.GetChatByUserID(receiverID, event.Message.SenderID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		_, err = storage.CreatChat(event.Message.SenderID, receiverID)
+	} else if err != nil {
+		return err
+	}
+	if err != nil {
+		return err
+	}
 
 	if ok {
-		receiver.egress <- event
+
+		if err := storage.SaveMessage(event.Message, true); err != nil {
+			return err
+		}
+
+		messages, err := storage.GetUnseenMessages(receiverID)
+		if err != nil {
+			receiver.egress <- event
+		}else {
+			for _, message := range *messages {
+				evnt := Event{
+					Message: &message,
+				}
+				receiver.egress <-evnt
+			}
+		}
+
+
 	} else {
-		return fmt.Errorf("user not found %v", receiverID)
+		if err := storage.SaveMessage(event.Message, false); err != nil {
+			return err
+		}
 	}
 
 	return nil

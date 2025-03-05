@@ -7,7 +7,7 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/models"
 )
 
-func SaveMessage(message *models.MessageRequest) error{
+func SaveMessage(message *models.MessageRequest, seen bool) error{
 	db := config.GetDB()
 
 	msg := models.Message{
@@ -15,6 +15,7 @@ func SaveMessage(message *models.MessageRequest) error{
 		SenderID: message.SenderID,
 		ReceiverID: message.ReceiverID,
 		Content: message.Content,
+		Seen: seen,
 		CreatedAt: time.Now(),
 	}
 
@@ -48,4 +49,44 @@ func MarkMessageAsRead(chatID uint) error{
 	}
 
 	return nil
+}
+
+func GetUnseenMessages(receiverId uint) (*[]models.MessageRequest, error) {
+
+	db := config.GetDB()
+
+	messages := new([]models.Message)
+
+	if err := db.Table("messages").Where("seen = ?", false).Find(&messages).Error; err != nil {
+		return nil, err
+	}
+
+	for _, message := range *messages {
+		if err := MarkMessageAsRead(message.ChatID); err != nil {
+			break
+		}
+	}
+
+
+	return messageModelToMessageReq(messages), nil
+}
+
+
+func messageModelToMessageReq(messages *[]models.Message) *[]models.MessageRequest {
+
+	msgs := make([]models.MessageRequest, len(*messages))
+
+	for _, message := range *messages {
+		
+		msg := &models.MessageRequest{
+			ChatID: message.ChatID,
+			SenderID: message.SenderID,
+			ReceiverID: message.ReceiverID,
+			Content: message.Content,
+		}
+
+		msgs = append(msgs, *msg)
+	}
+
+	return &msgs
 }

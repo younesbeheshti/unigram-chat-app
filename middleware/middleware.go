@@ -23,14 +23,14 @@ func ValidateTokenHandler(next http.Handler) http.Handler {
 		}
 
 		tokenString := tokenParts[1]
-		if err := utils.ValidateToken(tokenString); err != nil {
+		if err := utils.ValidateToket(tokenString); err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
 		next.ServeHTTP(w, r)
 	})
-}
+} 
 
 func CorsHandler(next http.Handler) http.Handler {
 	return handlers.CORS(
