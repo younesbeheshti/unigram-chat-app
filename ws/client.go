@@ -2,7 +2,9 @@ package ws
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/younesbeheshti/chatapp-backend/models"
@@ -14,7 +16,7 @@ type Client struct {
 	connection *websocket.Conn
 	manager    *Manager
 	user       *models.User
-	egress     chan Event
+	egress     chan *Event
 }
 
 func NewClient(conn *websocket.Conn, manager *Manager, user *models.User) *Client {
@@ -22,7 +24,7 @@ func NewClient(conn *websocket.Conn, manager *Manager, user *models.User) *Clien
 		connection: conn,
 		manager:    manager,
 		user:       user,
-		egress:     make(chan Event),
+		egress:     make(chan *Event),
 	}
 }
 
@@ -32,8 +34,16 @@ func (c *Client) readMessages() {
 		c.connection.Close()
 	}()
 
+	if err := c.connection.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
+		log.Println(err)
+		return
+	}
+	c.connection.SetReadLimit(1024)
+	c.connection.SetPongHandler(c.pongHandler)
+
 	for {
 		_, payload, err := c.connection.ReadMessage()
+
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error reading messages: %v", err)
@@ -47,7 +57,7 @@ func (c *Client) readMessages() {
 			break
 		}
 
-		if err := c.manager.routeMessage(request, c); err != nil {
+		if err := c.manager.routeMessage(&request, c); err != nil {
 			log.Println(err)
 		}
 	}
@@ -57,6 +67,8 @@ func (c *Client) writeMessages() {
 	defer func() {
 		c.manager.unregister <- c
 	}()
+
+	ticker := time.NewTicker(pingInterval)
 
 	for {
 		select {
@@ -68,6 +80,8 @@ func (c *Client) writeMessages() {
 				return
 			}
 
+			fmt.Println(msg.MessageRequest.Content)
+
 			data, err := json.Marshal(msg)
 			if err != nil {
 				log.Println(err)
@@ -78,8 +92,19 @@ func (c *Client) writeMessages() {
 				log.Println("error :", err)
 				return
 			}
-
+		case <-ticker.C:
+			log.Println("ping")
+			
+			if err := c.connection.WriteMessage(websocket.PingMessage, []byte(``)); err != nil {
+				log.Println("write msg err:", err)
+				return 
+			}
 		}
 	}
 
+}
+
+func (c *Client) pongHandler(pongmsg  string) error {
+	log.Println("pong")
+	return c.connection.SetReadDeadline(time.Now().Add(pongWait))
 }

@@ -22,7 +22,16 @@ type ContactsRespose struct {
 }
 
 type ChatResponse struct {
-	Chats *[]Chat `json:"chat"`
+	Chats []*Chat `json:"chat"`
+}
+
+type AddChatRequest struct {
+	User1ID uint `json:"user1id"`
+	User2ID uint `json:"user2id"`
+}
+
+type AddChatResponse struct {
+	ChatID uint `json:"chat_id"`
 }
 
 type MessageRequest struct {

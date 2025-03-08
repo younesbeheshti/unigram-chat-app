@@ -7,16 +7,16 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/models"
 )
 
-func SaveMessage(message *models.MessageRequest, seen bool) error{
+func SaveMessage(message *models.MessageRequest, seen bool) error {
 	db := config.GetDB()
 
 	msg := models.Message{
-		ChatID: message.ChatID,
-		SenderID: message.SenderID,
+		ChatID:     message.ChatID,
+		SenderID:   message.SenderID,
 		ReceiverID: message.ReceiverID,
-		Content: message.Content,
-		Seen: seen,
-		CreatedAt: time.Now(),
+		Content:    message.Content,
+		Seen:       seen,
+		CreatedAt:  time.Now(),
 	}
 
 	result := db.Create(&msg)
@@ -26,10 +26,11 @@ func SaveMessage(message *models.MessageRequest, seen bool) error{
 
 	return nil
 }
-func GetChatHistory(chatID uint) (*[]models.Message, error) {
+
+func GetChatHistory(chatID uint) ([]*models.Message, error) {
 	db := config.GetDB()
 
-	messages := new([]models.Message)
+	var messages []*models.Message
 
 	result := db.Table("messages").Where("chat_id = ?", chatID).Order("created_at desc").Find(&messages)
 
@@ -40,53 +41,45 @@ func GetChatHistory(chatID uint) (*[]models.Message, error) {
 	return messages, nil
 
 }
-func MarkMessageAsRead(chatID uint) error{
+func MarkMessageAsRead(chatid uint) error {
 	db := config.GetDB()
 
-	result := db.Table("messages").Where("chat_id = ?", chatID).Set("seen", true)
-	if err := result.Error; err != nil {
-		return err
-	}
+	result := db.Table("messages").Where("chat_id = ?", chatid).Update("seen", true)
 
-	return nil
+	return result.Error
 }
 
-func GetUnseenMessages(receiverId uint) (*[]models.MessageRequest, error) {
+func GetUnseenMessages(receiverId uint) ([]*models.MessageRequest, error) {
 
 	db := config.GetDB()
 
-	messages := new([]models.Message)
+	var messages []*models.Message
 
-	if err := db.Table("messages").Where("seen = ?", false).Find(&messages).Error; err != nil {
+	if err := db.Table("messages").Where("seen = ? and receiver_id = ?", false, receiverId).Find(&messages).Error; err != nil {
 		return nil, err
 	}
 
-	for _, message := range *messages {
-		if err := MarkMessageAsRead(message.ChatID); err != nil {
-			break
-		}
+	if len(messages) != 0 {
+		MarkMessageAsRead(messages[0].ReceiverID)
 	}
-
-
 	return messageModelToMessageReq(messages), nil
 }
 
+func messageModelToMessageReq(messages []*models.Message) []*models.MessageRequest {
 
-func messageModelToMessageReq(messages *[]models.Message) *[]models.MessageRequest {
+	var msgs []*models.MessageRequest
 
-	msgs := make([]models.MessageRequest, len(*messages))
+	for _, message := range messages {
 
-	for _, message := range *messages {
-		
 		msg := &models.MessageRequest{
-			ChatID: message.ChatID,
-			SenderID: message.SenderID,
+			ChatID:     message.ChatID,
+			SenderID:   message.SenderID,
 			ReceiverID: message.ReceiverID,
-			Content: message.Content,
+			Content:    message.Content,
 		}
 
-		msgs = append(msgs, *msg)
+		msgs = append(msgs, msg)
 	}
 
-	return &msgs
+	return msgs
 }

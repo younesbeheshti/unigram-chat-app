@@ -2,13 +2,14 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/younesbeheshti/chatapp-backend/config"
 	"github.com/younesbeheshti/chatapp-backend/models"
 )
 
-func CreatChat(user1ID uint, user2ID uint) (*models.Chat, error) {
+func CreatChat(user1ID uint, user2ID uint) (uint, error) {
 	db := config.GetDB()
 
 	chat := new(models.Chat)
@@ -19,10 +20,10 @@ func CreatChat(user1ID uint, user2ID uint) (*models.Chat, error) {
 	result := db.Create(&chat)
 
 	if err := result.Error; err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return chat, nil
+	return chat.ID, nil
 
 }
 
@@ -45,16 +46,17 @@ func GetChatUsersByUserID(userID uint) (*[]models.User, error) {
 	return &users, nil
 }
 
-func GetChatsByUserID(userID uint) (*[]models.Chat, error) {
+func GetChatsByUserID(userID uint) ([]*models.Chat, error) {
 	db := config.GetDB()
 
-	chats := new([]models.Chat)
+	var chats []*models.Chat
 
 	//TODO: if the user has any chat return the contact(*User model)
 
 	result := db.Table("chats").Where("user1_id = ? or user2_id = ?", userID, userID).Find(&chats)
 
 	if err := result.Error; err != nil {
+		fmt.Println("error", err)
 		return nil, err
 	}
 

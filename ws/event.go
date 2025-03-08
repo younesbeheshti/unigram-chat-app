@@ -1,9 +1,19 @@
 package ws
 
-import "github.com/younesbeheshti/chatapp-backend/models"
+import (
+	"time"
+
+	"github.com/younesbeheshti/chatapp-backend/models"
+)
+
+
+var (
+	pongWait = 10 * time.Second
+	pingInterval = (pongWait*9) / 10
+)
 
 type Event struct {
-	Message *models.MessageRequest `json:"message"`
+	*models.MessageRequest `json:"message"`
 }
 
 

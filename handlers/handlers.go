@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -123,14 +124,9 @@ func GetContactHandler(w http.ResponseWriter, r *http.Request)  {
 
 func GetChatsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	userID, err := strconv.Atoi((mux.Vars(r)["chatid"]))
-	if err != nil {
-		res.Message = err.Error()
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	userID := r.Context().Value("user_id").(uint)
 
-	chats, err := storage.GetChatsByUserID(uint(userID))
+	chats, err := storage.GetChatsByUserID(userID)
 	if err != nil {
 		res.Message = err.Error()
 		w.WriteHeader(http.StatusBadRequest)
@@ -164,24 +160,34 @@ func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(messages)
 }
 
-func SendMessageHandler(w http.ResponseWriter, r *http.Request) {
-	var req models.MessageRequest
-	err := json.NewDecoder(r.Body).Decode(&req)
+
+func MarkMessagesReadHandler(w http.ResponseWriter, r *http.Request) {
+	chatid, err := strconv.Atoi(mux.Vars(r)["chatid"])
 	if err != nil {
 		res.Message = err.Error()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	// err = storage.SaveMessage(req.ChatID, req.SenderID, req.ReceiverID, req.Content)
-	// if err != nil {
-	// 	res.Message = err.Error()
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	return
-	// }
-
-	w.WriteHeader(http.StatusOK)
+	storage.MarkMessageAsRead(uint(chatid))
 }
 
-func MarkMessagesReadHandler(w http.ResponseWriter, r *http.Request) {
+func AddChatHandler(w http.ResponseWriter, r *http.Request) {
+
+	var req models.AddChatRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		res.Message = err.Error()
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	chatId, err := storage.CreatChat(req.User1ID, req.User2ID)
+	if err != nil {
+		return
+	}
+
+	var resp models.AddChatResponse
+	resp.ChatID = chatId
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
 }

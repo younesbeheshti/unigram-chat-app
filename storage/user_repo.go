@@ -43,7 +43,7 @@ func GetUserByID(userID uint) *models.User {
 	db := config.GetDB()
 
 	user := new(models.User)
-	db.Table("users").Find(&user)
+	db.Table("users").Where("id = ?", userID).Find(&user)
 	return user
 
 }

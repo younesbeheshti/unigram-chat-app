@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -10,27 +11,34 @@ import (
 
 func ValidateTokenHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		tokenString := ""
+
 		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "Authorization header missing", http.StatusUnauthorized)
-			return
+		if strings.HasPrefix(authHeader, "Bearer ") {
+			tokenString = strings.TrimPrefix(authHeader, "Bearer ")
 		}
 
-		tokenParts := strings.Split(authHeader, " ")
-		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-			http.Error(w, "Invalid Authorization header", http.StatusUnauthorized)
-			return
+		if tokenString == "" {
+			tokenString = r.URL.Query().Get("token")
 		}
 
-		tokenString := tokenParts[1]
-		if err := utils.ValidateToket(tokenString); err != nil {
+		if tokenString == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		userid, err := utils.ValidateToket(tokenString)
+		if err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "user_id", userid)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-} 
+}
 
 func CorsHandler(next http.Handler) http.Handler {
 	return handlers.CORS(
