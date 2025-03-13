@@ -34,6 +34,9 @@ type AddChatResponse struct {
 	ChatID uint `json:"chat_id"`
 }
 
+type MessageHistory struct {
+	Messages []*Message `json:"messages"`
+}
 type MessageRequest struct {
 	ChatID     uint   `json:"chatid"`
 	SenderID   uint   `json:"senderid"`

@@ -17,19 +17,17 @@ func SetupRoutes() *mux.Router {
 	router.HandleFunc("/users", handlers.GetUsersHandler).Methods("GET")
 
 	router.HandleFunc("/auth/register", handlers.RegisterUserHandler).Methods("POST")
-
 	router.HandleFunc("/auth/login", handlers.LoginUserHandler).Methods("POST")
 
 	// TODO : ?
 	// router.Handle("/user/chats/{userid}", middleware.ValidateTokenHandler(http.HandlerFunc(handlers.GetChatsHandler))).Methods("GET")
 	router.Handle("/user/chat", middleware.ValidateTokenHandler(http.HandlerFunc(handlers.GetChatsHandler))).Methods("GET")
 	router.Handle("/user/chat/{user_id}", middleware.ValidateTokenHandler(http.HandlerFunc(handlers.GetChatsHandler))).Methods("GET")
-
-	router.Handle("/user/contacts/{userid}", middleware.ValidateTokenHandler(http.HandlerFunc(handlers.GetContactHandler))).Methods("GET")
-
+	router.Handle("/user/addchat",middleware.ValidateTokenHandler(http.HandlerFunc(handlers.AddChatHandler))).Methods("POST")
+	router.Handle("/user/contacts", middleware.ValidateTokenHandler(http.HandlerFunc(handlers.GetContactHandler))).Methods("GET")
 	router.HandleFunc("/user/{userid}", handlers.GetUserHandler).Methods("GET")
 
-	router.HandleFunc("/messages/{chatid}", handlers.GetMessagesHandler).Methods("GET")
+	router.HandleFunc("/user/chat/messages/{chatid}", handlers.GetMessagesHandler).Methods("GET")
 
 	router.HandleFunc("/messages/read", handlers.MarkMessagesReadHandler).Methods("POST")
 

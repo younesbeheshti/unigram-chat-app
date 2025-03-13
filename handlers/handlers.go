@@ -14,6 +14,7 @@ import (
 )
 
 var res models.Respnse
+
 func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var req models.LoginRequst
@@ -99,17 +100,13 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-func GetContactHandler(w http.ResponseWriter, r *http.Request)  {
+func GetContactHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	id, err := strconv.Atoi(mux.Vars(r)["userid"])
-	if err != nil {
-		res.Message = err.Error()
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	id := r.Context().Value("user_id").(uint)
 
 	var resp models.ContactsRespose
+	var err error
 	resp.Contacts, err = storage.GetContact(uint(id))
 	if err != nil {
 		res.Message = err.Error()
@@ -141,6 +138,7 @@ func GetChatsHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {
+	var resp models.MessageHistory
 	w.Header().Set("Content-Type", "application/json")
 	chatid, err := strconv.Atoi(mux.Vars(r)["chatid"])
 	if err != nil {
@@ -155,11 +153,10 @@ func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
+	resp.Messages = messages
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(messages)
+	json.NewEncoder(w).Encode(resp)
 }
-
 
 func MarkMessagesReadHandler(w http.ResponseWriter, r *http.Request) {
 	chatid, err := strconv.Atoi(mux.Vars(r)["chatid"])
@@ -174,20 +171,31 @@ func MarkMessagesReadHandler(w http.ResponseWriter, r *http.Request) {
 
 func AddChatHandler(w http.ResponseWriter, r *http.Request) {
 
+	var chatId uint
 	var req models.AddChatRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		res.Message = err.Error()
+		fmt.Print(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	chatId, err := storage.CreatChat(req.User1ID, req.User2ID)
+	chat, err := storage.GetChatByUserID(req.User1ID, req.User2ID)
 	if err != nil {
-		return
+		chatId, err = storage.CreateChat(req.User1ID, req.User2ID)
+		if err != nil {
+			res.Message = err.Error()
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}else {
+		chatId = chat.ID
 	}
+
+	
 
 	var resp models.AddChatResponse
 	resp.ChatID = chatId
-	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
+	w.WriteHeader(http.StatusOK)
 }

@@ -74,8 +74,8 @@ func ServeWS(manager *Manager, w http.ResponseWriter, r *http.Request) {
 
 	manager.register <- client
 
-	//Ask mehrshad ... 
-	manager.SendUnseenMessages(user.ID)
+	//TODO : Ask mehrshad ... 
+	// manager.SendUnseenMessages(user.ID)
 
 	go client.readMessages()
 	go client.writeMessages()
@@ -95,10 +95,8 @@ func (m *Manager) routeMessage(event *Event, sender *Client) error {
 
 	_, err := storage.GetChatByUserID(receiverID, event.MessageRequest.SenderID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		fmt.Println("error ->", err)
-		_, err = storage.CreatChat(event.MessageRequest.SenderID, receiverID)
+		_, err = storage.CreateChat(event.MessageRequest.SenderID, receiverID)
 	} else if err != nil {
-		fmt.Println("error ->", err)
 		return err
 	}
 	if err != nil {

@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"time"
 
@@ -35,7 +34,6 @@ func ValidateToket(tokenString string) (uint, error) {
 	var userID uint
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		userID = uint(claims["user_id"].(float64))
-		fmt.Println(userID)
 	}
 
 	return userID, nil

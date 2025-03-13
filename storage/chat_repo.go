@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"database/sql"
 	"fmt"
 	"time"
 
@@ -9,22 +8,26 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/models"
 )
 
-func CreatChat(user1ID uint, user2ID uint) (uint, error) {
+func CreateChat(user1ID uint, user2ID uint) (uint, error) {
 	db := config.GetDB()
 
-	chat := new(models.Chat)
-	chat.User1ID = user1ID
-	chat.User2ID = user2ID
-	chat.CreatedAt = time.Now()
-
-	result := db.Create(&chat)
-
-	if err := result.Error; err != nil {
+	_, err := GetChatByUserID(user1ID, user2ID)
+	if err != nil {
 		return 0, err
 	}
 
-	return chat.ID, nil
+	chat := models.Chat{
+		User1ID: user1ID,
+		User2ID: user2ID,
+		CreatedAt: time.Now(), 
+	}
 
+	result := db.Create(&chat)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+
+	return chat.ID, nil
 }
 
 func GetChatUsersByUserID(userID uint) (*[]models.User, error) {
@@ -63,14 +66,20 @@ func GetChatsByUserID(userID uint) ([]*models.Chat, error) {
 	return chats, nil
 }
 
-func GetChatByUserID(userID2 uint, userID1 uint) (*models.Chat, error) {
-	var chat *models.Chat
+func GetChatByUserID(userID1, userID2 uint) (*models.Chat, error) {
 	db := config.GetDB()
-	result := db.Table("chats").Where("(user1_id = @user1 and user2_id = @user2) or (user1_id = @user2 and user2_id = @user1)",
-		sql.Named("user1", userID1), sql.Named("user2", userID2)).Find(&chat)
-	if err := result.Error; err != nil {
-		return nil, err
-	}
-	return chat, nil
 
+	var chat models.Chat
+
+	result := db.Where(
+		"(user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)",
+		userID1, userID2, userID2, userID1,
+	).First(&chat)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &chat, nil
 }
+
