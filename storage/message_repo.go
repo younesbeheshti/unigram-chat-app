@@ -10,7 +10,21 @@ import (
 func SaveMessage(message *models.MessageRequest, seen bool) error {
 	db := config.GetDB()
 
-	msg := models.Message{
+	var msg models.Message
+
+	// if message.ReceiverID == nil {
+	// 	pubChannel := "public_channel"
+	// 	var chatID uint = 0
+	// 	msg = models.Message{
+	// 		ChatID: &chatID,
+	// 		SenderID:   message.SenderID,
+	// 		PubChannel: &pubChannel,
+	// 		Content:    message.Content,
+	// 		Seen:       seen,
+	// 		CreatedAt:  time.Now(),
+	// 	}
+	// }else {
+	msg = models.Message{
 		ChatID:     message.ChatID,
 		SenderID:   message.SenderID,
 		ReceiverID: message.ReceiverID,
@@ -18,6 +32,7 @@ func SaveMessage(message *models.MessageRequest, seen bool) error {
 		Seen:       seen,
 		CreatedAt:  time.Now(),
 	}
+	// }
 
 	result := db.Create(&msg)
 	if err := result.Error; err != nil {
@@ -32,12 +47,12 @@ func GetChatHistory(chatID uint) ([]*models.Message, error) {
 
 	var messages []*models.Message
 
-	result := db.Table("messages").Where("chat_id = ?", chatID).Order("created_at desc").Find(&messages)
+	result := db.Table("messages").Where("chat_id = ?", chatID).Find(&messages)
 
 	if err := result.Error; err != nil {
 		return nil, err
 	}
-
+	
 	return messages, nil
 
 }
@@ -60,7 +75,7 @@ func GetUnseenMessages(receiverId uint) ([]*models.MessageRequest, error) {
 	}
 
 	if len(messages) != 0 {
-		MarkMessageAsRead(messages[0].ReceiverID)
+		MarkMessageAsRead(*messages[0].ReceiverID)
 	}
 	return messageModelToMessageReq(messages), nil
 }

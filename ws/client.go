@@ -11,22 +11,24 @@ import (
 )
 
 type ClientList map[uint]*Client
+type PublicChannel map[*Client]bool
 
 type Client struct {
-	connection *websocket.Conn
-	manager    *Manager
-	user       *models.User
-	egress     chan *Event
+    connection *websocket.Conn
+    manager    *Manager
+    user       *models.User
+    egress     chan *Event
 }
 
 func NewClient(conn *websocket.Conn, manager *Manager, user *models.User) *Client {
-	return &Client{
-		connection: conn,
-		manager:    manager,
-		user:       user,
-		egress:     make(chan *Event),
-	}
+    return &Client{
+        connection: conn,
+        manager:    manager,
+        user:       user,
+        egress:     make(chan *Event),
+    }
 }
+
 
 func (c *Client) readMessages() {
 	defer func() {
@@ -38,7 +40,7 @@ func (c *Client) readMessages() {
 		log.Println(err)
 		return
 	}
-	c.connection.SetReadLimit(1024)
+	c.connection.SetReadLimit(4096)
 	c.connection.SetPongHandler(c.pongHandler)
 
 	for {

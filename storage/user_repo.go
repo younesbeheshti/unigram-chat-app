@@ -60,10 +60,10 @@ func GetUsers() (*[]models.User, error) {
 	return users, nil
 }
 
-func GetContact(userID uint) (*[]models.User, error) {
+func GetContact(userID uint) ([]*models.User, error) {
 	db := config.GetDB()
 
-	contacts := new([]models.User)
+	var contacts []*models.User
 	result := db.Table("users").Where("id != ?", userID).Find(&contacts)
 	if err := result.Error; err != nil {
 		return nil, err

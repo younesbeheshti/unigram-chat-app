@@ -13,7 +13,7 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/utils"
 )
 
-var res models.Respnse
+var res models.Response
 
 func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -105,7 +105,7 @@ func GetContactHandler(w http.ResponseWriter, r *http.Request) {
 
 	id := r.Context().Value("user_id").(uint)
 
-	var resp models.ContactsRespose
+	var resp models.ContactsResponse
 	var err error
 	resp.Contacts, err = storage.GetContact(uint(id))
 	if err != nil {
@@ -199,3 +199,7 @@ func AddChatHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 	w.WriteHeader(http.StatusOK)
 }
+
+// func GetOnlineUsers(w http.ResponseWriter, r *http.Request) {
+// 	var channelID uint
+// }

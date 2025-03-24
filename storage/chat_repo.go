@@ -12,7 +12,7 @@ func CreateChat(user1ID uint, user2ID uint) (uint, error) {
 	db := config.GetDB()
 
 	_, err := GetChatByUserID(user1ID, user2ID)
-	if err != nil {
+	if err == nil {
 		return 0, err
 	}
 
@@ -30,10 +30,10 @@ func CreateChat(user1ID uint, user2ID uint) (uint, error) {
 	return chat.ID, nil
 }
 
-func GetChatUsersByUserID(userID uint) (*[]models.User, error) {
+func GetChatUsersByUserID(userID uint) ([]*models.User, error) {
 	db := config.GetDB()
 
-	var users []models.User
+	var users []*models.User
 
 	err := db.Raw(`
 		SELECT DISTINCT u.* 
@@ -46,7 +46,7 @@ func GetChatUsersByUserID(userID uint) (*[]models.User, error) {
 		return nil, err
 	}
 
-	return &users, nil
+	return users, nil
 }
 
 func GetChatsByUserID(userID uint) ([]*models.Chat, error) {
