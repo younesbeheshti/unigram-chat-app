@@ -10,21 +10,7 @@ import (
 func SaveMessage(message *models.MessageRequest, seen bool) error {
 	db := config.GetDB()
 
-	var msg models.Message
-
-	// if message.ReceiverID == nil {
-	// 	pubChannel := "public_channel"
-	// 	var chatID uint = 0
-	// 	msg = models.Message{
-	// 		ChatID: &chatID,
-	// 		SenderID:   message.SenderID,
-	// 		PubChannel: &pubChannel,
-	// 		Content:    message.Content,
-	// 		Seen:       seen,
-	// 		CreatedAt:  time.Now(),
-	// 	}
-	// }else {
-	msg = models.Message{
+	msg := models.Message{
 		ChatID:     message.ChatID,
 		SenderID:   message.SenderID,
 		ReceiverID: message.ReceiverID,
@@ -32,7 +18,6 @@ func SaveMessage(message *models.MessageRequest, seen bool) error {
 		Seen:       seen,
 		CreatedAt:  time.Now(),
 	}
-	// }
 
 	result := db.Create(&msg)
 	if err := result.Error; err != nil {
@@ -52,7 +37,7 @@ func GetChatHistory(chatID uint) ([]*models.Message, error) {
 	if err := result.Error; err != nil {
 		return nil, err
 	}
-	
+
 	return messages, nil
 
 }
