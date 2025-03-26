@@ -35,12 +35,13 @@ type AddChatResponse struct {
 }
 
 type MessageHistory struct {
-	Messages []*Message `json:"messages"`
+	Messages []*MessageRequest `json:"messages"`
 }
 type MessageRequest struct {
-	ChatID     *uint  `json:"chatid,omitempty"`
+	ChatID     uint  `json:"chatid,omitempty"`
+	SenderName string `json:"sender_name,omitempty"`
 	SenderID   uint   `json:"senderid"`
-	ReceiverID *uint  `json:"receiverid,omitempty"`
+	ReceiverID uint  `json:"receiverid,omitempty"`
 	Content    string `json:"content"`
 }
 
@@ -71,9 +72,9 @@ type Chat struct {
 
 type Message struct {
 	ID         uint      `gorm:"primaryKey;autoIncrement" json:"id"`
-	ChatID     *uint     `gorm:"index" json:"chatid"`
+	ChatID     uint     `gorm:"index" json:"chatid"`
 	SenderID   uint      `gorm:"not null" json:"senderid"`
-	ReceiverID *uint     `gorm:"index" json:"receiverid"`
+	ReceiverID uint     `gorm:"index" json:"receiverid"`
 	Content    string    `gorm:"type:text;not null" json:"content"`
 	Seen       bool      `gorm:"default:false" json:"seen"`
 	CreatedAt  time.Time `json:"created_at"`

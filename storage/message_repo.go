@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"log"
 	"time"
 
 	"github.com/younesbeheshti/chatapp-backend/config"
@@ -27,7 +28,7 @@ func SaveMessage(message *models.MessageRequest, seen bool) error {
 	return nil
 }
 
-func GetChatHistory(chatID uint) ([]*models.Message, error) {
+func GetChatHistory(chatID uint) ([]*models.MessageRequest, error) {
 	db := config.GetDB()
 
 	var messages []*models.Message
@@ -38,7 +39,7 @@ func GetChatHistory(chatID uint) ([]*models.Message, error) {
 		return nil, err
 	}
 
-	return messages, nil
+	return messageModelToMessageReq(messages), nil
 
 }
 func MarkMessageAsRead(chatid uint) error {
@@ -60,7 +61,7 @@ func GetUnseenMessages(receiverId uint) ([]*models.MessageRequest, error) {
 	}
 
 	if len(messages) != 0 {
-		MarkMessageAsRead(*messages[0].ReceiverID)
+		MarkMessageAsRead(messages[0].ReceiverID)
 	}
 	return messageModelToMessageReq(messages), nil
 }
@@ -71,8 +72,15 @@ func messageModelToMessageReq(messages []*models.Message) []*models.MessageReque
 
 	for _, message := range messages {
 
+		username, err := GetUserNameByID(message.SenderID)
+		if err != nil {
+			log.Println("error", err)
+			username = ""
+		}
+
 		msg := &models.MessageRequest{
 			ChatID:     message.ChatID,
+			SenderName: username,
 			SenderID:   message.SenderID,
 			ReceiverID: message.ReceiverID,
 			Content:    message.Content,

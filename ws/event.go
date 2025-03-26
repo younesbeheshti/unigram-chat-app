@@ -13,6 +13,7 @@ var (
 )
 
 type Event struct {
+	Type string `json:"type"`
 	*models.MessageRequest `json:"message"`
 }
 
@@ -23,4 +24,7 @@ type EventHandler func(event Event, c *Client) error
 const (
 	EventSendMessage = "send_message"
 	EventNewMessage = "new_message"
+	EventJoinChannel = "join_channel"
+	EventLeaveChannel = "leave_channel"
+	EventServerMessage = "server_message"
 )

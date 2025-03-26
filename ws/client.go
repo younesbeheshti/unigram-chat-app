@@ -59,6 +59,27 @@ func (c *Client) readMessages() {
 			break
 		}
 
+		if request.Type == EventJoinChannel {
+			c.manager.pbjoin <- c
+			request.Type = EventServerMessage
+			request.Content = fmt.Sprintf("%v joined the chat room", request.SenderName)
+			event := Event{
+				Type: EventServerMessage,
+				MessageRequest: &models.MessageRequest{
+					SenderName: request.SenderName,
+					Content:    fmt.Sprintf("hi %v, welcome to the chat room", request.SenderName),
+				},
+			}
+
+			c.egress <- &event
+		}
+
+		if request.Type == EventLeaveChannel {
+			request.Type = EventServerMessage
+			request.Content = fmt.Sprintf("%v left the chat room", request.SenderName)
+			c.manager.pbleave <- c
+		}
+
 		if err := c.manager.routeMessage(&request, c); err != nil {
 			log.Println(err)
 		}
@@ -82,13 +103,14 @@ func (c *Client) writeMessages() {
 				return
 			}
 
-			fmt.Println(msg.MessageRequest.Content)
-
 			data, err := json.Marshal(msg)
 			if err != nil {
+				fmt.Println("error marshalin", err)
 				log.Println(err)
 				continue
 			}
+
+			fmt.Println(msg)
 
 			if err := c.connection.WriteMessage(websocket.TextMessage, data); err != nil {
 				log.Println("error :", err)

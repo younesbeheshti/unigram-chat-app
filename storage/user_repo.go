@@ -6,6 +6,16 @@ import (
 )
 
 
+func GetUserNameByID(ID uint) (string, error) {
+	db := config.GetDB()
+
+	var user *models.User
+	if err := db.Table("users").Where("id = ?", ID).First(&user).Error; err != nil {
+		return "", err
+	}
+
+	return user.Username, nil
+}
 func GetUserByUserName(username string) (*models.User, error) {
 	db := config.GetDB()
 
@@ -32,6 +42,10 @@ func GetUserByEmail(email string) (*models.User, error) {
 func CreatUser(user *models.User) (uint, error) {
 	db := config.GetDB()
 
+	_, err := GetUserByUserName(user.Username)
+	if err == nil {
+		return 0, err
+	}
 	result := db.Create(&user)
 	if err := result.Error; err != nil {
 		return 0, err
@@ -71,3 +85,4 @@ func GetContact(userID uint) ([]*models.User, error) {
 
 	return contacts, nil
 }
+

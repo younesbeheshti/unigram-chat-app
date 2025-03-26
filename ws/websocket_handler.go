@@ -13,14 +13,16 @@ import (
 type Manager struct {
 	clients    ClientList
 	pbChannel  PublicChannel
+	pbjoin chan *Client
+	pbleave chan *Client
 	register   chan *Client
 	unregister chan *Client
 	mu         sync.Mutex
 }
 
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+	ReadBufferSize:  4096,
+	WriteBufferSize: 4096,
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
@@ -35,6 +37,7 @@ func NewManager() *Manager {
 	}
 
 	go m.start()
+	go m.handlePublicChannel()
 	return &m
 }
 
@@ -43,27 +46,35 @@ func (m *Manager) start() {
 		select {
 		case client := <-m.register:
 			m.mu.Lock()
+
 			m.clients[client.user.ID] = client
-			m.pbChannel[client] = true
-			// for _, channel := range client.user.Channels {
-			// 	if m.channels[channel.ID] == nil {
-			// 		m.channels[channel.ID] = make(map[*Client]bool)
-			// 	}
-			// 	m.channels[channel.ID][client] = true
-			// }
+
 			m.mu.Unlock()
 
 		case client := <-m.unregister:
 			m.mu.Lock()
+
 			client.connection.Close()
 			delete(m.clients, client.user.ID)
 
-			m.pbChannel[client] = false
-			delete(m.pbChannel, client)
-			// for _, clients := range m.channels {
-			// 	delete(clients, client)
-			// }
 			m.mu.Unlock()
+		}
+	}
+}
+
+func (m *Manager) handlePublicChannel() {
+	for {
+		select {
+			case client :=<- m.pbjoin:
+				m.mu.Lock()
+				m.pbChannel[client] = true
+				m.mu.Unlock()
+
+			case client :=<- m.pbleave:
+				m.mu.Lock()
+				m.pbChannel[client] = false
+				delete(m.pbChannel, client)
+				m.mu.Unlock()
 		}
 	}
 }
@@ -93,7 +104,7 @@ func (m *Manager) routeMessage(event *Event, sender *Client) error {
 		return fmt.Errorf("msg is nil")
 	}
 
-	if event.MessageRequest.ReceiverID == nil {
+	if event.MessageRequest.ReceiverID == 0 {
 		return m.sendChannelMessage(event, sender)
 	} else {
 		return m.sendPrivateMessage(event)
@@ -118,7 +129,7 @@ func (m *Manager) sendPrivateMessage(event *Event) error {
 	receiverID := event.MessageRequest.ReceiverID
 
 	m.mu.Lock()
-	receiver, ok := m.clients[*receiverID]
+	receiver, ok := m.clients[receiverID]
 	m.mu.Unlock()
 
 	if ok {
