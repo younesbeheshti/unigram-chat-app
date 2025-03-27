@@ -6,6 +6,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type OnlineUsers struct {
+	Users []*User `json:"users"`
+}
+
 type LoginRequst struct {
 	Username string `json:"username"`
 	Password string `json:"password"`

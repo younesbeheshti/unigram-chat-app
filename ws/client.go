@@ -33,6 +33,7 @@ func NewClient(conn *websocket.Conn, manager *Manager, user *models.User) *Clien
 func (c *Client) readMessages() {
 	defer func() {
 		c.manager.unregister <- c
+		c.manager.pbleave <- c
 		c.connection.Close()
 	}()
 
@@ -59,6 +60,8 @@ func (c *Client) readMessages() {
 			break
 		}
 
+		go printRequest(request)
+		
 		if request.Type == EventJoinChannel {
 			c.manager.pbjoin <- c
 			request.Type = EventServerMessage
@@ -89,6 +92,8 @@ func (c *Client) readMessages() {
 func (c *Client) writeMessages() {
 	defer func() {
 		c.manager.unregister <- c
+		c.manager.pbleave <- c
+
 	}()
 
 	ticker := time.NewTicker(pingInterval)
@@ -131,4 +136,9 @@ func (c *Client) writeMessages() {
 func (c *Client) pongHandler(pongmsg  string) error {
 	log.Println("pong")
 	return c.connection.SetReadDeadline(time.Now().Add(pongWait))
+}
+
+
+func printRequest(event Event) {
+	fmt.Printf("%v, length = %v: %v\n", event.Type, len(event.Content), event.Content)
 }

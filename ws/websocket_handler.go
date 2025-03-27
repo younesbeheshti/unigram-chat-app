@@ -1,20 +1,22 @@
 package ws
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/younesbeheshti/chatapp-backend/models"
 	"github.com/younesbeheshti/chatapp-backend/storage"
 )
 
 type Manager struct {
 	clients    ClientList
 	pbChannel  PublicChannel
-	pbjoin chan *Client
-	pbleave chan *Client
+	pbjoin     chan *Client
+	pbleave    chan *Client
 	register   chan *Client
 	unregister chan *Client
 	mu         sync.Mutex
@@ -34,6 +36,8 @@ func NewManager() *Manager {
 		pbChannel:  make(PublicChannel),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
+		pbjoin:     make(chan *Client),
+		pbleave:    make(chan *Client),
 	}
 
 	go m.start()
@@ -65,16 +69,16 @@ func (m *Manager) start() {
 func (m *Manager) handlePublicChannel() {
 	for {
 		select {
-			case client :=<- m.pbjoin:
-				m.mu.Lock()
-				m.pbChannel[client] = true
-				m.mu.Unlock()
+		case client := <-m.pbjoin:
+			m.mu.Lock()
+			m.pbChannel[client] = true
+			m.mu.Unlock()
 
-			case client :=<- m.pbleave:
-				m.mu.Lock()
-				m.pbChannel[client] = false
-				delete(m.pbChannel, client)
-				m.mu.Unlock()
+		case client := <-m.pbleave:
+			m.mu.Lock()
+			m.pbChannel[client] = false
+			delete(m.pbChannel, client)
+			m.mu.Unlock()
 		}
 	}
 }
@@ -145,4 +149,19 @@ func (m *Manager) sendPrivateMessage(event *Event) error {
 	}
 
 	return nil
+}
+
+func (m *Manager) GetActiveUsersHandler(w http.ResponseWriter, r *http.Request) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	activeUsers := []*models.User{}
+	for client := range m.pbChannel {
+		activeUsers = append(activeUsers, client.user)
+		fmt.Println("active user: ", client.user.Username)
+	}
+
+	response := models.OnlineUsers{Users: activeUsers}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

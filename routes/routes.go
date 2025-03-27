@@ -21,6 +21,7 @@ func SetupRoutes() *mux.Router {
 
 	// TODO : ?
 	// router.Handle("/user/chats/{userid}", middleware.ValidateTokenHandler(http.HandlerFunc(handlers.GetChatsHandler))).Methods("GET")
+	router.Handle("/active-users",middleware.ValidateTokenHandler(http.HandlerFunc(manager.GetActiveUsersHandler))).Methods("GET")
 	router.Handle("/user/chat", middleware.ValidateTokenHandler(http.HandlerFunc(handlers.GetChatsHandler))).Methods("GET")
 	router.Handle("/user/chat/{user_id}", middleware.ValidateTokenHandler(http.HandlerFunc(handlers.GetChatsHandler))).Methods("GET")
 	router.Handle("/user/addchat",middleware.ValidateTokenHandler(http.HandlerFunc(handlers.AddChatHandler))).Methods("POST")

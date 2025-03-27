@@ -200,6 +200,3 @@ func AddChatHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// func GetOnlineUsers(w http.ResponseWriter, r *http.Request) {
-// 	var channelID uint
-// }

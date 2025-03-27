@@ -27,4 +27,7 @@ const (
 	EventJoinChannel = "join_channel"
 	EventLeaveChannel = "leave_channel"
 	EventServerMessage = "server_message"
+	EventFileMessage = "file_message"
+	EventPublicMessage = "public_message"
+	EventPrivateMessage = "private_message"
 )
