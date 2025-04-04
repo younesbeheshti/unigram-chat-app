@@ -8,6 +8,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+
+// RegisterUser
 func RegisterUser(username string, email string, password string) (uint, error) {
 
 	encpw, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -29,6 +31,8 @@ func RegisterUser(username string, email string, password string) (uint, error) 
 	return userID, nil
 }
 
+
+// LoginUser
 func LoginUser(username string, password string) (uint, error) {
 
 	user, err := storage.GetUserByUserName(username)

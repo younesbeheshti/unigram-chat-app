@@ -14,6 +14,7 @@ import (
 
 var db *gorm.DB
 
+// function to connect to the database
 func ConnectDB() *gorm.DB {
 	
 	err := godotenv.Load(".env")

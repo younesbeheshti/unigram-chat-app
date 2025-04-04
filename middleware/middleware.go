@@ -9,6 +9,8 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/utils"
 )
 
+
+// ValidateTokenHandler
 func ValidateTokenHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -40,6 +42,8 @@ func ValidateTokenHandler(next http.Handler) http.Handler {
 	})
 }
 
+
+// CorsHandler
 func CorsHandler(next http.Handler) http.Handler {
 	return handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}),

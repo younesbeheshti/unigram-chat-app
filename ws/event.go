@@ -6,21 +6,20 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/models"
 )
 
-
+// Time allowed to read the next pong message from the peer.
 var (
 	pongWait = 10 * time.Second
 	pingInterval = (pongWait*9) / 10
 )
 
+
+// Event is a message
 type Event struct {
 	Type string `json:"type"`
 	*models.MessageRequest `json:"message"`
 }
 
-
-type EventHandler func(event Event, c *Client) error
-
-
+// Event types
 const (
 	EventSendMessage = "send_message"
 	EventNewMessage = "new_message"

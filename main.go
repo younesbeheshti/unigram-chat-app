@@ -1,12 +1,8 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
 
 	"github.com/younesbeheshti/chatapp-backend/config"
-	"github.com/younesbeheshti/chatapp-backend/middleware"
 	"github.com/younesbeheshti/chatapp-backend/routes"
 )
 
@@ -14,13 +10,11 @@ import (
 
 func main() {
 
-
 	router := routes.SetupRoutes()
 	config.Init()
 
+	server := config.NewServer("127.0.0.1", ":15000", "TCP")
+	server.InitServer(router)	
 
-	fmt.Println("server is up on port: 8080")
-
-	log.Fatal(http.ListenAndServe(":8080", middleware.CorsHandler(router)))
 
 }

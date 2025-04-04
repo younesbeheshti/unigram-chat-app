@@ -10,6 +10,8 @@ import (
 
 var secretKey = []byte(os.Getenv("SECRET_KEY_JWT"))
 
+
+// GenerateJWT 
 func GenerateJWT(userID uint) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
@@ -20,6 +22,8 @@ func GenerateJWT(userID uint) (string, error) {
 
 	return token.SignedString(secretKey)
 }
+
+// ValidateToket
 func ValidateToket(tokenString string) (uint, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

@@ -8,6 +8,8 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/models"
 )
 
+
+// CreateChat
 func CreateChat(user1ID uint, user2ID uint) (uint, error) {
 	db := config.GetDB()
 
@@ -30,6 +32,7 @@ func CreateChat(user1ID uint, user2ID uint) (uint, error) {
 	return chat.ID, nil
 }
 
+// GetChatUsersByUserID
 func GetChatUsersByUserID(userID uint) ([]*models.User, error) {
 	db := config.GetDB()
 
@@ -49,6 +52,8 @@ func GetChatUsersByUserID(userID uint) ([]*models.User, error) {
 	return users, nil
 }
 
+
+// GetChatsByUserID
 func GetChatsByUserID(userID uint) ([]*models.Chat, error) {
 	db := config.GetDB()
 
@@ -66,6 +71,8 @@ func GetChatsByUserID(userID uint) ([]*models.Chat, error) {
 	return chats, nil
 }
 
+
+// GetChatByUserID
 func GetChatByUserID(userID1, userID2 uint) (*models.Chat, error) {
 	db := config.GetDB()
 

@@ -6,6 +6,8 @@ import (
 )
 
 
+
+// GetUserNameByID from db
 func GetUserNameByID(ID uint) (string, error) {
 	db := config.GetDB()
 
@@ -16,6 +18,8 @@ func GetUserNameByID(ID uint) (string, error) {
 
 	return user.Username, nil
 }
+
+// GetUserByUserName from db
 func GetUserByUserName(username string) (*models.User, error) {
 	db := config.GetDB()
 
@@ -27,6 +31,8 @@ func GetUserByUserName(username string) (*models.User, error) {
 
 	return user, nil
 }
+
+// GetUserByEmail from db
 func GetUserByEmail(email string) (*models.User, error) {
 	db := config.GetDB()
 
@@ -39,6 +45,8 @@ func GetUserByEmail(email string) (*models.User, error) {
 
 	return user, nil
 }
+
+// CreatUser and save it to the db
 func CreatUser(user *models.User) (uint, error) {
 	db := config.GetDB()
 
@@ -53,6 +61,8 @@ func CreatUser(user *models.User) (uint, error) {
 
 	return user.ID, nil
 }
+
+// GetUserByID from db
 func GetUserByID(userID uint) *models.User {
 	db := config.GetDB()
 
@@ -62,6 +72,9 @@ func GetUserByID(userID uint) *models.User {
 
 }
 
+
+
+// GetUsers from db
 func GetUsers() (*[]models.User, error) {
 	db := config.GetDB()
 
@@ -74,6 +87,8 @@ func GetUsers() (*[]models.User, error) {
 	return users, nil
 }
 
+
+// GetContact from db
 func GetContact(userID uint) ([]*models.User, error) {
 	db := config.GetDB()
 

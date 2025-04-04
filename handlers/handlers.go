@@ -15,6 +15,7 @@ import (
 
 var res models.Response
 
+// LoginUserHandler
 func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var req models.LoginRequst
@@ -45,6 +46,8 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 }
 
+
+// RegisterUserHandler
 func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "applcation/json")
 	var req models.RegisterRequest
@@ -86,6 +89,7 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
+// GetUserHandler
 func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	id, err := strconv.Atoi(mux.Vars(r)["userid"])
@@ -119,6 +123,8 @@ func GetContactHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+
+// GetChatsHandler
 func GetChatsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	userID := r.Context().Value("user_id").(uint)
@@ -137,6 +143,9 @@ func GetChatsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 
 }
+
+
+// GetMessagesHandler
 func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {
 	var resp models.MessageHistory
 	w.Header().Set("Content-Type", "application/json")
@@ -158,6 +167,9 @@ func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+
+
+// MarkMessagesReadHandler
 func MarkMessagesReadHandler(w http.ResponseWriter, r *http.Request) {
 	chatid, err := strconv.Atoi(mux.Vars(r)["chatid"])
 	if err != nil {
@@ -169,6 +181,8 @@ func MarkMessagesReadHandler(w http.ResponseWriter, r *http.Request) {
 	storage.MarkMessageAsRead(uint(chatid))
 }
 
+
+// AddChatHandler
 func AddChatHandler(w http.ResponseWriter, r *http.Request) {
 
 	var chatId uint

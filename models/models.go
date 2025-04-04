@@ -6,6 +6,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+
+
+// helper models to handle responses
 type OnlineUsers struct {
 	Users []*User `json:"users"`
 }
@@ -49,6 +52,10 @@ type MessageRequest struct {
 	Content    string `json:"content"`
 }
 
+
+
+//users model
+
 type User struct {
 	ID           uint      `gorm:"primaryKey;autoIncrement" json:"id"`
 	Username     string    `gorm:"unique;not null" json:"username"`
@@ -58,6 +65,8 @@ type User struct {
 	UpdatedAt    time.Time `json:"-"`
 }
 
+
+//channels model
 type Channel struct {
 	ID        uint      `gorm:"primaryKey;autoIncrement" json:"id"`
 	Name      string    `gorm:"not null" json:"name"`
@@ -67,6 +76,8 @@ type Channel struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+
+// chat model
 type Chat struct {
 	ID        uint      `gorm:"primaryKey;autoIncrement" json:"id"`
 	User1ID   uint      `gorm:"not null;index" json:"user1id"`
@@ -74,6 +85,8 @@ type Chat struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+
+// message model
 type Message struct {
 	ID         uint      `gorm:"primaryKey;autoIncrement" json:"id"`
 	ChatID     uint     `gorm:"index" json:"chatid"`

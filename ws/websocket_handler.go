@@ -12,6 +12,8 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/storage"
 )
 
+
+// Manager maintains the set of active clients and broadcasts messages to the clients
 type Manager struct {
 	clients    ClientList
 	pbChannel  PublicChannel
@@ -22,6 +24,7 @@ type Manager struct {
 	mu         sync.Mutex
 }
 
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  4096,
 	WriteBufferSize: 4096,
@@ -30,6 +33,8 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+
+// NewManager creates a new Manager
 func NewManager() *Manager {
 	m := Manager{
 		clients:    make(ClientList),
@@ -40,11 +45,15 @@ func NewManager() *Manager {
 		pbleave:    make(chan *Client),
 	}
 
+	// Start the manager
 	go m.start()
+	// Start the public channel
 	go m.handlePublicChannel()
 	return &m
 }
 
+
+// Start the manager
 func (m *Manager) start() {
 	for {
 		select {
@@ -66,6 +75,7 @@ func (m *Manager) start() {
 	}
 }
 
+// Start the public channel
 func (m *Manager) handlePublicChannel() {
 	for {
 		select {
@@ -83,6 +93,8 @@ func (m *Manager) handlePublicChannel() {
 	}
 }
 
+
+// ServeWS handles websocket requests from the peer
 func ServeWS(manager *Manager, w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value("user_id").(uint)
 	user := storage.GetUserByID(uint(id))
@@ -93,21 +105,27 @@ func ServeWS(manager *Manager, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create a new client
 	client := NewClient(conn, manager, user)
 	fmt.Println("creating client: ", user.ID)
 
+	// Register client
 	manager.register <- client
 
+	// Start processing messages
 	go client.readMessages()
 	go client.writeMessages()
 }
 
+
+// routeMessage routes the message
 func (m *Manager) routeMessage(event *Event, sender *Client) error {
 
 	if event.MessageRequest == nil {
 		return fmt.Errorf("msg is nil")
 	}
 
+	// If receiverID is 0, then it's a channel message
 	if event.MessageRequest.ReceiverID == 0 {
 		return m.sendChannelMessage(event, sender)
 	} else {
@@ -116,6 +134,8 @@ func (m *Manager) routeMessage(event *Event, sender *Client) error {
 
 }
 
+
+// sendChannelMessage
 func (m *Manager) sendChannelMessage(event *Event, sender *Client) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -126,21 +146,28 @@ func (m *Manager) sendChannelMessage(event *Event, sender *Client) error {
 		}
 	}
 
+	// Save message
 	return storage.SaveMessage(event.MessageRequest, true)
 }
 
+
+// sendPrivateMessage
 func (m *Manager) sendPrivateMessage(event *Event) error {
 	receiverID := event.MessageRequest.ReceiverID
 
+	// Check if receiver is online
 	m.mu.Lock()
 	receiver, ok := m.clients[receiverID]
 	m.mu.Unlock()
 
+	// if receiver is online send message
 	if ok {
 		if err := storage.SaveMessage(event.MessageRequest, true); err != nil {
 			return err
 		}
 		receiver.egress <- event
+
+	// if receiver is offline save message
 	} else {
 		fmt.Println("saved message for offline user:", receiverID)
 		if err := storage.SaveMessage(event.MessageRequest, false); err != nil {
@@ -151,6 +178,8 @@ func (m *Manager) sendPrivateMessage(event *Event) error {
 	return nil
 }
 
+
+// GetActiveUsersHandler
 func (m *Manager) GetActiveUsersHandler(w http.ResponseWriter, r *http.Request) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
