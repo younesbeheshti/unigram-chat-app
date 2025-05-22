@@ -52,8 +52,8 @@ A robust and scalable backend service for a real-time chat application built wit
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/younesbeheshti/chatapp-backend.git
-   cd chatapp-backend
+   git clone https://github.com/younesbeheshti/unigram-chat-app.git
+   cd unigram-chat-app
    ```
 
 2. Install dependencies:
@@ -76,10 +76,6 @@ A robust and scalable backend service for a real-time chat application built wit
    ```
 
 The server will start on `127.0.0.1:15000`.
-
-## API Endpoints
-
-The API documentation will be available at `/api/docs` when the server is running.
 
 ## WebSocket
 
