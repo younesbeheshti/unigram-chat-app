@@ -12,7 +12,6 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/storage"
 )
 
-
 // Manager maintains the set of active clients and broadcasts messages to the clients
 type Manager struct {
 	clients    ClientList
@@ -24,7 +23,6 @@ type Manager struct {
 	mu         sync.Mutex
 }
 
-
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  4096,
 	WriteBufferSize: 4096,
@@ -32,7 +30,6 @@ var upgrader = websocket.Upgrader{
 		return true
 	},
 }
-
 
 // NewManager creates a new Manager
 func NewManager() *Manager {
@@ -51,7 +48,6 @@ func NewManager() *Manager {
 	go m.handlePublicChannel()
 	return &m
 }
-
 
 // Start the manager
 func (m *Manager) start() {
@@ -93,7 +89,6 @@ func (m *Manager) handlePublicChannel() {
 	}
 }
 
-
 // ServeWS handles websocket requests from the peer
 func ServeWS(manager *Manager, w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value("user_id").(uint)
@@ -109,6 +104,9 @@ func ServeWS(manager *Manager, w http.ResponseWriter, r *http.Request) {
 	client := NewClient(conn, manager, user)
 	fmt.Println("creating client: ", user.ID)
 
+	//kill the connection if the user does exist and make the new connection
+	manager.CheckIfUserConnectedBefore(client)
+
 	// Register client
 	manager.register <- client
 
@@ -116,7 +114,6 @@ func ServeWS(manager *Manager, w http.ResponseWriter, r *http.Request) {
 	go client.readMessages()
 	go client.writeMessages()
 }
-
 
 // routeMessage routes the message
 func (m *Manager) routeMessage(event *Event, sender *Client) error {
@@ -134,7 +131,6 @@ func (m *Manager) routeMessage(event *Event, sender *Client) error {
 
 }
 
-
 // sendChannelMessage
 func (m *Manager) sendChannelMessage(event *Event, sender *Client) error {
 	m.mu.Lock()
@@ -149,7 +145,6 @@ func (m *Manager) sendChannelMessage(event *Event, sender *Client) error {
 	// Save message
 	return storage.SaveMessage(event.MessageRequest, true)
 }
-
 
 // sendPrivateMessage
 func (m *Manager) sendPrivateMessage(event *Event) error {
@@ -167,7 +162,7 @@ func (m *Manager) sendPrivateMessage(event *Event) error {
 		}
 		receiver.egress <- event
 
-	// if receiver is offline save message
+		// if receiver is offline save message
 	} else {
 		fmt.Println("saved message for offline user:", receiverID)
 		if err := storage.SaveMessage(event.MessageRequest, false); err != nil {
@@ -177,7 +172,6 @@ func (m *Manager) sendPrivateMessage(event *Event) error {
 
 	return nil
 }
-
 
 // GetActiveUsersHandler
 func (m *Manager) GetActiveUsersHandler(w http.ResponseWriter, r *http.Request) {
@@ -193,4 +187,19 @@ func (m *Manager) GetActiveUsersHandler(w http.ResponseWriter, r *http.Request) 
 	response := models.OnlineUsers{Users: activeUsers}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+// function to check if the user was connected before or not
+func (m *Manager) CheckIfUserConnectedBefore(client *Client) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	for _, c := range m.clients {
+		if c == client {
+			m.unregister <- c
+			return
+		}
+	}
+
+	fmt.Println("no user found with client:", client.user.Username)
 }
