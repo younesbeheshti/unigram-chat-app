@@ -5,8 +5,6 @@ import (
 	"github.com/younesbeheshti/chatapp-backend/models"
 )
 
-
-
 // GetUserNameByID from db
 func GetUserNameByID(ID uint) (string, error) {
 	db := config.GetDB()
@@ -51,7 +49,7 @@ func CreatUser(user *models.User) (uint, error) {
 	db := config.GetDB()
 
 	_, err := GetUserByUserName(user.Username)
-	if err == nil {
+	if err != nil {
 		return 0, err
 	}
 	result := db.Create(&user)
@@ -72,8 +70,6 @@ func GetUserByID(userID uint) *models.User {
 
 }
 
-
-
 // GetUsers from db
 func GetUsers() (*[]models.User, error) {
 	db := config.GetDB()
@@ -87,7 +83,6 @@ func GetUsers() (*[]models.User, error) {
 	return users, nil
 }
 
-
 // GetContact from db
 func GetContact(userID uint) ([]*models.User, error) {
 	db := config.GetDB()
@@ -100,4 +95,3 @@ func GetContact(userID uint) ([]*models.User, error) {
 
 	return contacts, nil
 }
-
