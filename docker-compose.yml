@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  app:
+    build: .
+    ports:
+      - "15000:15000"
+    environment:
+      - POSTGRES_URL=postgres://postgres:12345678@db:5432/postgres?sslmode=disable
+      - SECRET_KEY_JWT=pink-chocolate
+    depends_on:
+      - db
+    restart: unless-stopped
+  db:
+    image:  docker.arvancloud.ir/postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345678
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+volumes:
+  db_data: 
