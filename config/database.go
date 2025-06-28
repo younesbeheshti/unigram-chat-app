@@ -11,17 +11,16 @@ import (
 	"gorm.io/gorm"
 )
 
-
 var db *gorm.DB
 
 // function to connect to the database
 func ConnectDB() *gorm.DB {
-	
+
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	dsn := os.Getenv("POSTGRES_URL")
 
 	fmt.Println(dsn)
@@ -33,13 +32,11 @@ func ConnectDB() *gorm.DB {
 	return db
 }
 
-
-func Init() {
+func init() {
 	db = ConnectDB()
 
 	db.AutoMigrate(&models.User{}, &models.Chat{}, &models.Message{})
 }
-
 
 func GetDB() *gorm.DB {
 	if db == nil {
