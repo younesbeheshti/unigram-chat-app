@@ -50,6 +50,9 @@ func NewManager() *Manager {
 	go m.start()
 	// Start the public channel
 	go m.handlePublicChannel()
+
+	go m.ConsumeChannelMessages()
+
 	return &m
 }
 
@@ -119,6 +122,25 @@ func ServeWS(manager *Manager, w http.ResponseWriter, r *http.Request) {
 	go client.writeMessages()
 }
 
+func (m *Manager) ConsumeChannelMessages() {
+	err := m.rabbit.ConsumeChannelMessages(func(event *utils.Event) {
+		m.mu.Lock()
+		defer m.mu.Unlock()
+
+		for client := range m.pbChannel {
+			client.egress <- event
+		}
+
+		if err := storage.SaveMessage(event.MessageRequest, true); err != nil {
+			log.Println(err)
+		}
+
+	})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 // routeMessage routes the message
 func (m *Manager) routeMessage(event *utils.Event, sender *Client) error {
 
@@ -137,6 +159,11 @@ func (m *Manager) routeMessage(event *utils.Event, sender *Client) error {
 
 // sendChannelMessage
 func (m *Manager) sendChannelMessage(event *utils.Event, sender *Client) error {
+
+	if err := m.rabbit.PublishChannelMessages(event); err != nil {
+		return err
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 

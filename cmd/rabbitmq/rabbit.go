@@ -22,7 +22,7 @@ func NewRabbitService() *Service {
 	if err != nil {
 		log.Fatal(err)
 	}
-	dsn := os.Getenv("RABBITMQ_DSN")
+	dsn := os.Getenv("RABBITMQ_URL")
 	fmt.Println(dsn)
 
 	conn, err := amqp.Dial(dsn)
@@ -59,6 +59,82 @@ func NewRabbitService() *Service {
 	)
 
 	return &Service{conn: conn, ch: ch}
+}
+
+func (s *Service) ConsumeChannelMessages(messageHandler func(event *utils.Event)) error {
+
+	q, err := s.ch.QueueDeclare(
+		"",
+		false,
+		true,
+		true,
+		false,
+		nil,
+	)
+	if err != nil {
+		return failOnError(err, "Failed to declare a queue")
+	}
+
+	err = s.ch.QueueBind(
+		q.Name,
+		"",
+		"channel_messages",
+		false,
+		nil,
+	)
+	if err != nil {
+		return failOnError(err, "Failed to bind a queue")
+	}
+
+	msgs, err := s.ch.Consume(
+		q.Name,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return failOnError(err, "Failed to register a consumer")
+	}
+
+	go func() {
+		for msg := range msgs {
+			log.Printf("Received a message: %s", msg.Body)
+			var event *utils.Event
+			err := json.Unmarshal(msg.Body, &event)
+			if err != nil {
+				continue
+			}
+			messageHandler(event)
+		}
+	}()
+
+	return nil
+}
+
+func (s *Service) PublishChannelMessages(event *utils.Event) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := json.Marshal(event)
+	if err != nil {
+		return failOnError(err, "Failed to marshal event")
+	}
+
+	return s.ch.PublishWithContext(
+		ctx,
+		"",
+		"",
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        req,
+		},
+	)
+
 }
 
 func (s *Service) ConsumePrivateMessages(userID uint, messageHandler func(event *utils.Event)) error {
@@ -131,7 +207,7 @@ func (s *Service) PublishPrivateMessages(event *utils.Event) error {
 
 	routingKey := fmt.Sprintf("user_%d", event.MessageRequest.ReceiverID)
 
-	err = s.ch.PublishWithContext(
+	return s.ch.PublishWithContext(
 		ctx,
 		"private_messages",
 		routingKey,
@@ -142,7 +218,6 @@ func (s *Service) PublishPrivateMessages(event *utils.Event) error {
 			Body:        req,
 		})
 
-	return nil
 }
 
 func (s *Service) Close() {
