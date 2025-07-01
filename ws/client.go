@@ -13,30 +13,40 @@ import (
 
 // ClientList is a map of clients
 type ClientList map[uint]*Client
+
 // PublicChannel is a map of clients
 type PublicChannel map[*Client]bool
 
-
 // Client is a middleman between the websocket connection and the hub
 type Client struct {
-    connection *websocket.Conn
-    manager    *Manager
-    user       *models.User
-    egress     chan *Event
+	connection *websocket.Conn
+	manager    *Manager
+	user       *models.User
+	egress     chan *utils.Event
 }
-
 
 // NewClient creates a new client
 func NewClient(conn *websocket.Conn, manager *Manager, user *models.User) *Client {
-    return &Client{
-        connection: conn,
-        manager:    manager,
-        user:       user,
-        egress:     make(chan *Event),
-    }
+	client := &Client{
+		connection: conn,
+		manager:    manager,
+		user:       user,
+		egress:     make(chan *utils.Event),
+	}
+
+	go client.ConsumePrivateMessages()
+
+	return client
 }
 
-
+func (c *Client) ConsumePrivateMessages() {
+	err := c.manager.rabbit.ConsumePrivateMessages(c.user.ID, func(event *utils.Event) {
+		c.egress <- event
+	})
+	if err != nil {
+		log.Println("failed to consume private msg", err)
+	}
+}
 
 // readMessages reads messages from the websocket connection
 func (c *Client) readMessages() {
@@ -47,7 +57,7 @@ func (c *Client) readMessages() {
 	}()
 
 	// Set read deadline
-	if err := c.connection.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
+	if err := c.connection.SetReadDeadline(time.Now().Add(utils.PongWait)); err != nil {
 		log.Println(err)
 		return
 	}
@@ -55,7 +65,6 @@ func (c *Client) readMessages() {
 	c.connection.SetReadLimit(4096)
 	// Set ping handler
 	c.connection.SetPongHandler(c.pongHandler)
-
 
 	for {
 
@@ -70,7 +79,7 @@ func (c *Client) readMessages() {
 			break
 		}
 
-		// decrypt message 
+		// decrypt message
 		message, err := c.DecryptMessage(payload)
 		if err != nil {
 			log.Fatal(err)
@@ -78,21 +87,21 @@ func (c *Client) readMessages() {
 		}
 
 		// Unmarshal message
-		var request Event
+		var request utils.Event
 		if err := json.Unmarshal(message, &request); err != nil {
 			log.Printf("error unmarshaling event: %v", err)
 			break
 		}
 
 		go printRequest(request)
-		
-		// Handle message to see if the user join or leave the channel 
-		if request.Type == EventJoinChannel {
+
+		// Handle message to see if the user join or leave the channel
+		if request.Type == utils.EventJoinChannel {
 			c.manager.pbjoin <- c
-			request.Type = EventServerMessage
+			request.Type = utils.EventServerMessage
 			request.Content = fmt.Sprintf("%v joined the chat room", request.SenderName)
-			event := Event{
-				Type: EventServerMessage,
+			event := utils.Event{
+				Type: utils.EventServerMessage,
 				MessageRequest: &models.MessageRequest{
 					SenderName: request.SenderName,
 					Content:    fmt.Sprintf("hi %v, welcome to the chat room", request.SenderName),
@@ -103,12 +112,11 @@ func (c *Client) readMessages() {
 		}
 
 		// Handle message to see if the user join or leave the channel
-		if request.Type == EventLeaveChannel {
-			request.Type = EventServerMessage
+		if request.Type == utils.EventLeaveChannel {
+			request.Type = utils.EventServerMessage
 			request.Content = fmt.Sprintf("%v left the chat room", request.SenderName)
 			c.manager.pbleave <- c
 		}
-
 
 		// send to routemessage to send the message to the client
 		if err := c.manager.routeMessage(&request, c); err != nil {
@@ -116,7 +124,6 @@ func (c *Client) readMessages() {
 		}
 	}
 }
-
 
 // writeMessages writes messages to the websocket connection
 func (c *Client) writeMessages() {
@@ -126,11 +133,9 @@ func (c *Client) writeMessages() {
 
 	}()
 
-
 	// Set write deadline
-	ticker := time.NewTicker(pingInterval)
+	ticker := time.NewTicker(utils.PingInterval)
 
-	
 	for {
 
 		// Write message
@@ -143,7 +148,6 @@ func (c *Client) writeMessages() {
 				return
 			}
 
-			
 			// Marshal message
 			data, err := json.Marshal(msg)
 			if err != nil {
@@ -151,7 +155,7 @@ func (c *Client) writeMessages() {
 				log.Println(err)
 				continue
 			}
-			
+
 			// encrypt message
 			message := c.EncryptMessage(data)
 
@@ -166,25 +170,23 @@ func (c *Client) writeMessages() {
 		// Write ping
 		case <-ticker.C:
 			log.Println("ping")
-			
+
 			if err := c.connection.WriteMessage(websocket.PingMessage, []byte(``)); err != nil {
 				log.Println("write msg err:", err)
-				return 
+				return
 			}
 		}
 	}
 
 }
 
-
 // pongHandler
-func (c *Client) pongHandler(pongmsg  string) error {
+func (c *Client) pongHandler(pongmsg string) error {
 	log.Println("pong")
-	return c.connection.SetReadDeadline(time.Now().Add(pongWait))
+	return c.connection.SetReadDeadline(time.Now().Add(utils.PongWait))
 }
 
-
-func printRequest(event Event) {
+func printRequest(event utils.Event) {
 	fmt.Printf("%v, length = %v: %v\n", event.Type, len(event.Content), event.Content)
 }
 

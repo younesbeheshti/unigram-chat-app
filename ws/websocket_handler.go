@@ -3,6 +3,8 @@ package ws
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/younesbeheshti/chatapp-backend/rabbitmq"
+	"github.com/younesbeheshti/chatapp-backend/utils"
 	"log"
 	"net/http"
 	"sync"
@@ -21,6 +23,7 @@ type Manager struct {
 	register   chan *Client
 	unregister chan *Client
 	mu         sync.Mutex
+	rabbit     *rabbitmq.Service
 }
 
 var upgrader = websocket.Upgrader{
@@ -40,6 +43,7 @@ func NewManager() *Manager {
 		unregister: make(chan *Client),
 		pbjoin:     make(chan *Client),
 		pbleave:    make(chan *Client),
+		rabbit:     rabbitmq.NewRabbitService(),
 	}
 
 	// Start the manager
@@ -116,7 +120,7 @@ func ServeWS(manager *Manager, w http.ResponseWriter, r *http.Request) {
 }
 
 // routeMessage routes the message
-func (m *Manager) routeMessage(event *Event, sender *Client) error {
+func (m *Manager) routeMessage(event *utils.Event, sender *Client) error {
 
 	if event.MessageRequest == nil {
 		return fmt.Errorf("msg is nil")
@@ -132,7 +136,7 @@ func (m *Manager) routeMessage(event *Event, sender *Client) error {
 }
 
 // sendChannelMessage
-func (m *Manager) sendChannelMessage(event *Event, sender *Client) error {
+func (m *Manager) sendChannelMessage(event *utils.Event, sender *Client) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -147,9 +151,13 @@ func (m *Manager) sendChannelMessage(event *Event, sender *Client) error {
 }
 
 // sendPrivateMessage
-func (m *Manager) sendPrivateMessage(event *Event) error {
+func (m *Manager) sendPrivateMessage(event *utils.Event) error {
 	receiverID := event.MessageRequest.ReceiverID
 
+	err := m.rabbit.PublishPrivateMessages(event)
+	if err != nil {
+		return err
+	}
 	// Check if receiver is online
 	m.mu.Lock()
 	receiver, ok := m.clients[receiverID]
