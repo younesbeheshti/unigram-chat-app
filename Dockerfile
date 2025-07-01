@@ -17,7 +17,7 @@ COPY . .
 RUN go build -o app .
 
 # Expose the port your app runs on
-EXPOSE 15000
+EXPOSE 15000 15001 15002 15003
 
 # Command to run the app
 CMD ["./app"] 

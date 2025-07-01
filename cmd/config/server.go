@@ -2,11 +2,10 @@ package config
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
+	"github.com/younesbeheshti/chatapp-backend/cmd/middleware"
 	"log"
 	"net/http"
-
-	"github.com/gorilla/mux"
-	"github.com/younesbeheshti/chatapp-backend/middleware"
 )
 
 type Server struct {
@@ -14,6 +13,7 @@ type Server struct {
 	Port    string
 	Type    string
 }
+
 // make a new server
 func NewServer(Address, Port, Type string) *Server {
 	return &Server{
@@ -23,10 +23,10 @@ func NewServer(Address, Port, Type string) *Server {
 	}
 }
 
-// function to init(or run) the server	
+// function to init(or run) the server
 func (s *Server) InitServer(router *mux.Router) {
 
-	fmt.Println("server is up on -> 127.0.0.1:15000")
+	fmt.Printf("server is up on -> 127.0.0.1:%s", s.Port)
 
 	log.Fatal(http.ListenAndServe(s.Port, middleware.CorsHandler(router)))
 }

@@ -3,11 +3,10 @@ package services
 import (
 	"fmt"
 
-	"github.com/younesbeheshti/chatapp-backend/models"
-	"github.com/younesbeheshti/chatapp-backend/storage"
+	"github.com/younesbeheshti/chatapp-backend/cmd/models"
+	"github.com/younesbeheshti/chatapp-backend/cmd/storage"
 	"golang.org/x/crypto/bcrypt"
 )
-
 
 // RegisterUser
 func RegisterUser(username string, email string, password string) (uint, error) {
@@ -30,7 +29,6 @@ func RegisterUser(username string, email string, password string) (uint, error) 
 
 	return userID, nil
 }
-
 
 // LoginUser
 func LoginUser(username string, password string) (uint, error) {

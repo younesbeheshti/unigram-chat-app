@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/younesbeheshti/chatapp-backend/config"
-	"github.com/younesbeheshti/chatapp-backend/models"
+	"github.com/younesbeheshti/chatapp-backend/cmd/config"
+	"github.com/younesbeheshti/chatapp-backend/cmd/models"
 )
-
 
 // CreateChat
 func CreateChat(user1ID uint, user2ID uint) (uint, error) {
@@ -19,9 +18,9 @@ func CreateChat(user1ID uint, user2ID uint) (uint, error) {
 	}
 
 	chat := models.Chat{
-		User1ID: user1ID,
-		User2ID: user2ID,
-		CreatedAt: time.Now(), 
+		User1ID:   user1ID,
+		User2ID:   user2ID,
+		CreatedAt: time.Now(),
 	}
 
 	result := db.Create(&chat)
@@ -52,7 +51,6 @@ func GetChatUsersByUserID(userID uint) ([]*models.User, error) {
 	return users, nil
 }
 
-
 // GetChatsByUserID
 func GetChatsByUserID(userID uint) ([]*models.Chat, error) {
 	db := config.GetDB()
@@ -71,7 +69,6 @@ func GetChatsByUserID(userID uint) ([]*models.Chat, error) {
 	return chats, nil
 }
 
-
 // GetChatByUserID
 func GetChatByUserID(userID1, userID2 uint) (*models.Chat, error) {
 	db := config.GetDB()
@@ -89,4 +86,3 @@ func GetChatByUserID(userID1, userID2 uint) (*models.Chat, error) {
 
 	return &chat, nil
 }
-

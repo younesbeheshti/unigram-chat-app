@@ -3,15 +3,15 @@ package ws
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/younesbeheshti/chatapp-backend/rabbitmq"
-	"github.com/younesbeheshti/chatapp-backend/utils"
+	"github.com/younesbeheshti/chatapp-backend/cmd/rabbitmq"
+	"github.com/younesbeheshti/chatapp-backend/cmd/utils"
 	"log"
 	"net/http"
 	"sync"
 
 	"github.com/gorilla/websocket"
-	"github.com/younesbeheshti/chatapp-backend/models"
-	"github.com/younesbeheshti/chatapp-backend/storage"
+	"github.com/younesbeheshti/chatapp-backend/cmd/models"
+	"github.com/younesbeheshti/chatapp-backend/cmd/storage"
 )
 
 // Manager maintains the set of active clients and broadcasts messages to the clients

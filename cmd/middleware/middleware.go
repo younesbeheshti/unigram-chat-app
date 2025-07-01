@@ -6,9 +6,8 @@ import (
 	"strings"
 
 	"github.com/gorilla/handlers"
-	"github.com/younesbeheshti/chatapp-backend/utils"
+	"github.com/younesbeheshti/chatapp-backend/cmd/utils"
 )
-
 
 // ValidateTokenHandler
 func ValidateTokenHandler(next http.Handler) http.Handler {
@@ -41,7 +40,6 @@ func ValidateTokenHandler(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
-
 
 // CorsHandler
 func CorsHandler(next http.Handler) http.Handler {

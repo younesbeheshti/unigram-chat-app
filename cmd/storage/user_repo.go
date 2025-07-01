@@ -1,8 +1,8 @@
 package storage
 
 import (
-	"github.com/younesbeheshti/chatapp-backend/config"
-	"github.com/younesbeheshti/chatapp-backend/models"
+	"github.com/younesbeheshti/chatapp-backend/cmd/config"
+	"github.com/younesbeheshti/chatapp-backend/cmd/models"
 )
 
 // GetUserNameByID from db

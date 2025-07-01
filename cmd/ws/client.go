@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/younesbeheshti/chatapp-backend/models"
-	"github.com/younesbeheshti/chatapp-backend/utils"
+	"github.com/younesbeheshti/chatapp-backend/cmd/models"
+	"github.com/younesbeheshti/chatapp-backend/cmd/utils"
 )
 
 // ClientList is a map of clients
@@ -80,15 +80,16 @@ func (c *Client) readMessages() {
 		}
 
 		// decrypt message
-		message, err := c.DecryptMessage(payload)
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
+		//message, err := c.DecryptMessage(payload)
+		//if err != nil {
+		//	log.Fatal(err)
+		//	return
+		//}
 
+		fmt.Println(string(payload))
 		// Unmarshal message
 		var request utils.Event
-		if err := json.Unmarshal(message, &request); err != nil {
+		if err := json.Unmarshal(payload, &request); err != nil {
 			log.Printf("error unmarshaling event: %v", err)
 			break
 		}
@@ -157,12 +158,12 @@ func (c *Client) writeMessages() {
 			}
 
 			// encrypt message
-			message := c.EncryptMessage(data)
+			//message := c.EncryptMessage(data)
 
 			go printRequest(*msg)
 
 			// Write message
-			if err := c.connection.WriteMessage(websocket.TextMessage, message); err != nil {
+			if err := c.connection.WriteMessage(websocket.TextMessage, data); err != nil {
 				log.Println("error :", err)
 				return
 			}

@@ -11,44 +11,6 @@ services:
       - server1
       - server2
       - server3
-
-  server1:
-    build: .
-    ports:
-      - "15001:15000"
-    environment:
-      - POSTGRES_URL=postgres://postgres:12345678@db:5432/postgres?sslmode=disable
-      - SECRET_KEY_JWT=pink-chocolate
-      - RABBITMQ_URL=amqp://guest:guest@localhost:5672/
-    depends_on:
-      - db
-      - rabbit
-    restart: unless-stopped
-
-  server2:
-    build: .
-    ports:
-      - "15002:15000"
-    environment:
-      - POSTGRES_URL=postgres://postgres:12345678@db:5432/postgres?sslmode=disable
-      - SECRET_KEY_JWT=pink-chocolate
-      - RABBITMQ_URL=amqp://guest:guest@localhost:5672/
-    depends_on:
-      - db
-      - rabbit
-    restart: unless-stopped
-
-  server3:
-    build: .
-    ports:
-      - "15003:15000"
-    environment:
-      - POSTGRES_URL=postgres://postgres:12345678@db:5432/postgres?sslmode=disable
-      - SECRET_KEY_JWT=pink-chocolate
-      - RABBITMQ_URL=amqp://guest:guest@localhost:5672/
-    depends_on:
-      - db
-      - rabbit
     restart: unless-stopped
 
 
@@ -62,6 +24,49 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     volumes:
       - rabbit_data:/var/lib/rabbitmq
+    restart: unless-stopped
+
+  server1:
+    build: .
+    ports:
+      - ":15001"
+    environment:
+      - POSTGRES_URL=postgres://postgres:12345678@db:5432/postgres?sslmode=disable
+      - SECRET_KEY_JWT=pink-chocolate
+      - RABBITMQ_URL=amqp://guest:guest@rabbit:5672/
+      - PORT=15001
+    depends_on:
+      - db
+      - rabbit
+    restart: unless-stopped
+
+  server2:
+    build: .
+    ports:
+      - ":15002"
+    environment:
+      - POSTGRES_URL=postgres://postgres:12345678@db:5432/postgres?sslmode=disable
+      - SECRET_KEY_JWT=pink-chocolate
+      - RABBITMQ_URL=amqp://guest:guest@rabbit:5672/
+      - PORT=15002
+    depends_on:
+      - db
+      - rabbit
+    restart: unless-stopped
+
+  server3:
+    build: .
+    ports:
+      - ":15003"
+    environment:
+      - POSTGRES_URL=postgres://postgres:12345678@db:5432/postgres?sslmode=disable
+      - SECRET_KEY_JWT=pink-chocolate
+      - RABBITMQ_URL=amqp://guest:guest@rabbit:5672/
+      - PORT=15003
+    depends_on:
+      - db
+      - rabbit
+    restart: unless-stopped
 
   db:
     image:  docker.arvancloud.ir/postgres:latest

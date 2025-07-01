@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/younesbeheshti/chatapp-backend/config"
-	"github.com/younesbeheshti/chatapp-backend/models"
+	"github.com/younesbeheshti/chatapp-backend/cmd/config"
+	"github.com/younesbeheshti/chatapp-backend/cmd/models"
 )
 
 // SaveMessage to db
@@ -29,7 +29,6 @@ func SaveMessage(message *models.MessageRequest, seen bool) error {
 
 	return nil
 }
-
 
 // GetChatHistory from db
 func GetChatHistory(chatID uint) ([]*models.MessageRequest, error) {
@@ -56,7 +55,6 @@ func MarkMessageAsRead(chatid uint) error {
 	return result.Error
 }
 
-
 // GetUnseenMessages
 func GetUnseenMessages(receiverId uint) ([]*models.MessageRequest, error) {
 
@@ -73,7 +71,6 @@ func GetUnseenMessages(receiverId uint) ([]*models.MessageRequest, error) {
 	}
 	return messageModelToMessageReq(messages), nil
 }
-
 
 // funcion to convert []*models.Message to []*models.MessageRequest
 func messageModelToMessageReq(messages []*models.Message) []*models.MessageRequest {

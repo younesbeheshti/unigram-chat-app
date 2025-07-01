@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/younesbeheshti/chatapp-backend/utils"
+	"github.com/younesbeheshti/chatapp-backend/cmd/utils"
 	"log"
 	"os"
 	"time"

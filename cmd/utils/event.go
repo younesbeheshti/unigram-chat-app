@@ -3,7 +3,7 @@ package utils
 import (
 	"time"
 
-	"github.com/younesbeheshti/chatapp-backend/models"
+	"github.com/younesbeheshti/chatapp-backend/cmd/models"
 )
 
 // Time allowed to read the next pong message from the peer.

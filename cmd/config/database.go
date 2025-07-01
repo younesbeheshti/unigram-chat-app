@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/younesbeheshti/chatapp-backend/models"
+	"github.com/younesbeheshti/chatapp-backend/cmd/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

@@ -7,10 +7,10 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/younesbeheshti/chatapp-backend/models"
-	"github.com/younesbeheshti/chatapp-backend/services"
-	"github.com/younesbeheshti/chatapp-backend/storage"
-	"github.com/younesbeheshti/chatapp-backend/utils"
+	"github.com/younesbeheshti/chatapp-backend/cmd/models"
+	"github.com/younesbeheshti/chatapp-backend/cmd/services"
+	"github.com/younesbeheshti/chatapp-backend/cmd/storage"
+	"github.com/younesbeheshti/chatapp-backend/cmd/utils"
 )
 
 var res models.Response
@@ -45,7 +45,6 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
 }
-
 
 // RegisterUserHandler
 func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +122,6 @@ func GetContactHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
 // GetChatsHandler
 func GetChatsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -143,7 +141,6 @@ func GetChatsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 
 }
-
 
 // GetMessagesHandler
 func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {
@@ -167,8 +164,6 @@ func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-
-
 // MarkMessagesReadHandler
 func MarkMessagesReadHandler(w http.ResponseWriter, r *http.Request) {
 	chatid, err := strconv.Atoi(mux.Vars(r)["chatid"])
@@ -180,7 +175,6 @@ func MarkMessagesReadHandler(w http.ResponseWriter, r *http.Request) {
 
 	storage.MarkMessageAsRead(uint(chatid))
 }
-
 
 // AddChatHandler
 func AddChatHandler(w http.ResponseWriter, r *http.Request) {
@@ -202,15 +196,12 @@ func AddChatHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-	}else {
+	} else {
 		chatId = chat.ID
 	}
-
-	
 
 	var resp models.AddChatResponse
 	resp.ChatID = chatId
 	json.NewEncoder(w).Encode(resp)
 	w.WriteHeader(http.StatusOK)
 }
-
